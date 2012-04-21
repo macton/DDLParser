@@ -1,0 +1,213 @@
+/*!
+local function generateSelect( select )
+*/
+  ///*= ( '=' ):rep( 80 ) */
+  // Select /*= select:getName() */
+  ///*= ( '=' ):rep( 80 ) */
+
+  class /*= select:getName() */ // /*= select:getDescription() or '' */
+  {
+  private:
+    uint32_t m_Value;
+
+  public:
+    enum
+    {
+      /*! for _, item in select:items() do */
+        /*= item:getName() */ = /*= ( '0x%08xUL' ):format( item:getNameHash() ) */, // /*= item:getDescription() or '' */
+      /*! end */
+    };
+
+    inline bool Init()
+    {
+      m_Value = /*= select:getDefaultItem():getName() */;
+      return true;
+    }
+
+    inline void Destroy() {}
+
+    inline uint32_t Get() const
+    {
+      return m_Value;
+    }
+
+    void Set( uint32_t value );
+    bool Load( FILE* fp );
+    bool Save( FILE* fp );
+  };
+/*!
+end
+
+local function generateBitfield( bitfield )
+*/
+  ///*= ( '=' ):rep( 80 ) */
+  // Bitfield /*= bitfield:getName() */
+  ///*= ( '=' ):rep( 80 ) */
+
+  class /*= bitfield:getName() */ // /*= bitfield:getDescription() or '' */
+  {
+  private:
+    uint32_t m_Value;
+
+  public:
+    enum
+    {
+      /*!for _, flag in bitfield:flags() do */
+        /*= flag:getName() */ = /*= getFlagValue( flag ) */, // /*= flag:getDescription() or '' */
+      /*! end */
+    };
+
+    inline bool Init()
+    {
+      m_Value = /*= bitfield:getDefaultFlag():getName() */;
+      return true;
+    }
+
+    inline void Destroy() {}
+
+    inline uint32_t Get() const
+    {
+      return m_Value;
+    }
+
+    inline void Set( uint32_t value )
+    {
+      m_Value = value;
+    }
+
+    inline void Add( uint32_t value )
+    {
+      m_Value |= value;
+    }
+
+    inline void Remove( uint32_t value )
+    {
+      m_Value &= ~value;
+    }
+
+    bool Load( FILE* fp );
+    bool Save( FILE* fp );
+  };
+/*!
+end
+
+local function generateStruct( struct )
+*/
+  ///*= ( '=' ):rep( 80 ) */
+  // Struct /*= struct:getName() */
+  ///*= ( '=' ):rep( 80 ) */
+
+  class /*= struct:getName() *//*! if struct:getBase() then */: public /*= struct:getBase() */ /*! end */ // /*= struct:getDescription() or '' */
+  {
+  private:
+    /*!
+    for _, field in struct:ownFields() do
+      if field:getArrayType() == 'scalar' then
+        if field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+          */
+          char m_/*= field:getName() */[ 256 ]; // /*= field:getDescription() or '' */
+          /*!
+        else
+          */
+          /*= getCppType( field ) */ m_/*= field:getName() */; // /*= field:getDescription() or '' */
+          /*!
+        end
+      end
+    end
+    */
+
+  public:
+    bool Init();
+
+    /*!
+    for _, field in struct:ownFields() do
+      if field:getArrayType() == 'scalar' then
+        if field:getDeclaredType() then
+          */
+          inline /*= field:getDeclaredType():getName() */* Get/*= field:getName() */()
+          {
+            return &m_/*= field:getName() */;
+          }
+          /*!
+        elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+          */
+          inline const char* Get/*= field:getName() */() const
+          {
+            return m_/*= field:getName() */;
+          }
+
+          inline void Set/*= field:getName() */( const char* value )
+          {
+            strncpy( m_/*= field:getName() */, value, sizeof( m_/*= field:getName() */ ) );
+          }
+          /*!
+        else
+          */
+          inline /*= getCppType( field ) */ Get/*= field:getName() */() const
+          {
+            return m_/*= field:getName() */;
+          }
+
+          inline void Set/*= field:getName() */( /*= getCppType( field ) */ value )
+          {
+            m_/*= field:getName() */ = value;
+          }
+          /*!
+        end
+      end
+    end
+    */
+
+    bool Load( FILE* fp );
+    bool Save( FILE* fp );
+  };
+/*!
+end
+
+local function generate( ddlc, first_aggregate, settings )
+  local ddl = ddlc:getDefinition()
+
+  for _, aggregate in ddl:aggregates() do
+    if aggregate:getType() == 'select' then
+      generateSelect( aggregate )
+    elseif aggregate:getType() == 'bitfield' then
+      generateBitfield( aggregate )
+    elseif aggregate:getType() == 'struct' then
+      generateStruct( aggregate )
+    else
+      error( 'Don\'t know how to generate code for ' .. aggregate:getType() )
+    end
+  end
+end
+
+function main( ddlc, first_aggregate, settings )
+  if settings[ '--help' ] then
+    io.write(
+      'HPP template arguments\n',
+      '\n',
+      '-h --help                      Shows this help page\n',
+      '-o --output-file               Defines the output file\n',
+      '\n'
+    )
+    return
+  end
+
+  checkSettings( settings, {
+    { short_name = '-o', long_name = '--output-file', mandatory = true, min = 1, max = 1 }
+  } )
+
+  setOutputFile( settings[ '--output-file' ][ 1 ] )
+
+  local disclaimer = ddlc:getDisclaimer()
+  */
+  ///*= ( '=' ):rep( #disclaimer + 1 ) */
+  // /*= disclaimer */
+  ///*= ( '=' ):rep( #disclaimer + 1 ) */
+  #include <stdio.h>
+  #include <stdint.h>
+  #include <string.h>
+  /*!
+
+  generate( ddlc, first_aggregate, settings )
+end
+*/

@@ -1,0 +1,251 @@
+/*!
+local function generateSelect( select )
+  */
+  ///*= ( '=' ):rep( 80 ) */
+  // Select /*= select:getName() */
+  ///*= ( '=' ):rep( 80 ) */
+
+  void /*= select:getName() */::Set( uint32_t value )
+  {
+    switch ( value ) // Check for a valid value.
+    {
+      /*! for _, item in select:items() do */
+        case /*= item:getName() */:
+      /*! end */
+      m_Value = value;
+      break;
+    }
+  }
+
+  bool /*= select:getName() */::Load( FILE* fp )
+  {
+    Init(); // Set to default value in case fread fails or the value is invalid.
+
+    uint32_t value;
+    if ( fread( &value, 1, 4, fp ) == 4 )
+    {
+      Set( value );
+      return true; // Load was successful, but value may not be set!
+    }
+
+    return false;
+  }
+
+  bool /*= select:getName() */::Save( FILE* fp )
+  {
+    return fwrite( &m_Value, 1, 4, fp ) == 4;
+  }
+  /*!
+end
+
+local function generateBitfield( bitfield )
+  */
+  ///*= ( '=' ):rep( 80 ) */
+  // Bitfield /*= bitfield:getName() */
+  ///*= ( '=' ):rep( 80 ) */
+
+  bool /*= bitfield:getName() */::Load( FILE* fp )
+  {
+    return fread( &m_Value, 1, 4, fp ) == 4;
+  }
+
+  bool /*= bitfield:getName() */::Save( FILE* fp )
+  {
+    return fwrite( &m_Value, 1, 4, fp ) == 4;
+  }
+  /*!
+end
+
+local function generateStruct( struct )
+*/
+  ///*= ( '=' ):rep( 80 ) */
+  // Struct /*= struct:getName() */
+  ///*= ( '=' ):rep( 80 ) */
+
+  bool /*= struct:getName() */::Init()
+  {
+    bool ok = true;
+
+    /*!
+    if struct:getBase() then */ok = ok && /*= struct:getBase() */::Init();/*! end
+
+    for _, field in struct:ownFields() do
+      if field:getArrayType() == 'scalar' then
+        if field:getDeclaredType() then
+          */
+          ok = ok && m_/*= field:getName() */.Init();
+          /*!
+          if field:getValue() then
+            if field:getType() == 'struct' then
+              dumpStructValue( { valueinfo = field } )
+            elseif field:getType() == 'select' then
+              */
+              m_/*= field:getName() */.Set( /*= field:getDeclaredType():getName() */::/*= field:getValue():getName() */ ); // /*= field:getValue():getName() */
+              /*!
+            else
+              if type( field:getValue() ) ~= 'table' then
+                */
+                m_/*= field:getName() */.Set( /*= field:getDeclaredType():getName() */::/*= field:getValue():getName() */ ); // /*= field:getValue():getName() */
+                /*!
+              else
+                */m_/*= field:getName() */.Set( /*!
+                for index, flag in ipairs( field:getValue() ) do
+                  if index ~=1 then emit( '|' ) end
+
+                  emit( field:getDeclaredType():getName(), '::', flag:getName() )
+                end
+                */ );/*!
+              end
+            end
+          end
+        else
+          if field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+            if #getFieldValue( field ) > 2 then
+              */
+              strncpy( m_/*= field:getName() */, /*= getFieldValue( field ) */, sizeof( m_/*= field:getName() */ ) );
+              m_/*= field:getName() */[ sizeof( m_/*= field:getName() */ ) - 1 ] = 0;
+              /*!
+            else
+              */
+              m_/*= field:getName() */[ 0 ] = 0;
+              /*!
+            end
+          else
+            */
+            m_/*= field:getName() */ = /*= getFieldValue( field ) */;
+            /*!
+          end
+        end
+      end
+    end
+    */
+
+    return ok;
+  }
+
+  bool /*= struct:getName() */::Load( FILE* fp )
+  {
+    bool ok = true;
+    /*!
+    if struct:getBase() then */ok = ok && /*= struct:getBase() */::Load( fp );/*! end
+
+    for _, field in struct:ownFields() do
+      if field:getDeclaredType() then
+        */
+        ok = ok && m_/*= field:getName() */.Load( fp );
+        /*!
+      elseif field:getType() == 'boolean' then
+        */
+        {
+          uint8_t value;
+          ok = ok && fread( &value, 1, 1, fp ) == 1;
+          m_/*= field:getName() */ = value != 0;
+        }
+        /*!
+      elseif field:getType() == 'string' then
+        */
+        {
+          uint8_t length;
+          ok = ok && fread( &length, 1, 1, fp ) == 1;
+          ok = ok && fread( m_/*= field:getName() */, 1, length, fp ) == length;
+        }
+        /*!
+      else
+        */
+        ok = ok && fread( &m_/*= field:getName() */, 1, /*= getCppTypeSize( field ) */, fp ) == /*= getCppTypeSize( field ) */;
+        /*!
+      end
+    end
+    */
+
+    return ok;
+  }
+
+  bool /*= struct:getName() */::Save( FILE* fp )
+  {
+    bool ok = true;
+    /*!
+    if struct:getBase() then */ok = ok && /*= struct:getBase() */::Save( fp );/*! end
+
+    for _, field in struct:ownFields() do
+      if field:getDeclaredType() then
+        */
+        ok = ok && m_/*= field:getName() */.Save( fp );
+        /*!
+      elseif field:getType() == 'boolean' then
+        */
+        {
+          uint8_t value = m_/*= field:getName() */ ? 1 : 0;
+          ok = ok && fwrite( &value, 1, 1, fp ) == 1;
+        }
+        /*!
+      elseif field:getType() == 'string' then
+        */
+        {
+          uint8_t length = strlen( m_/*= field:getName() */ );
+          ok = ok && fwrite( &length, 1, 1, fp ) == 1;
+          ok = ok && fwrite( m_/*= field:getName() */, 1, length, fp ) == length;
+        }
+        /*!
+      else
+        */
+        ok = ok && fwrite( &m_/*= field:getName() */, 1, /*= getCppTypeSize( field ) */, fp ) == /*= getCppTypeSize( field ) */;
+        /*!
+      end
+    end
+    */
+
+    return ok;
+  }
+/*!
+end
+
+local function generate( ddlc, first_aggregate, settings )
+  local ddl = ddlc:getDefinition()
+
+  for _, aggregate in ddl:aggregates() do
+    if aggregate:getType() == 'select' then
+      generateSelect( aggregate )
+    elseif aggregate:getType() == 'bitfield' then
+      generateBitfield( aggregate )
+    elseif aggregate:getType() == 'struct' then
+      generateStruct( aggregate )
+    else
+      error( 'Don\'t know how to generate code for ' .. aggregate:getType() )
+    end
+  end
+end
+
+function main( ddlc, first_aggregate, settings )
+  if settings[ '--help' ] then
+    io.write(
+      'CPP template arguments\n',
+      '\n',
+      '-h --help                      Shows this help page\n',
+      '-o --output-file               Defines the output file\n',
+      '-I --include                   #includes a file in the generated code\n',
+      '\n'
+    )
+    return
+  end
+
+  checkSettings( settings, {
+    { short_name = '-o', long_name = '--output-file', mandatory = true, min = 1, max = 1 },
+    { short_name = '-I', long_name = '--include', mandatory = false, min = 1 }
+  } )
+
+  local output = settings[ '--output-file' ][ 1 ]
+  setOutputFile( output )
+
+  local disclaimer = ddlc:getDisclaimer()
+  */
+  ///*= ( '=' ):rep( #disclaimer + 1 ) */
+  // /*= disclaimer */
+  ///*= ( '=' ):rep( #disclaimer + 1 ) */
+  /*! for _, include in ipairs( settings[ '--include' ] or {} ) do */
+    #include "/*= include */"
+  /*! end */
+  /*!
+  generate( ddlc, first_aggregate, settings )
+end
+*/

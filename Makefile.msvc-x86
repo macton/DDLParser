@@ -1,0 +1,189 @@
+.SUFFIXES: .lua .lt
+
+.lua.h:
+	util\text2c $< $(*F) > $@
+
+.lt.h:
+	util\text2c $< $(*F)_template > $@
+
+all: output\debug\ddlparser.lib output\release\ddlparser.lib ddlt\ddlt.exe test\test.exe
+
+##       ##       #### ########  ########     ###    ########  ##    ##
+####     ##        ##  ##     ## ##     ##   ## ##   ##     ##  ##  ##
+######   ##        ##  ##     ## ##     ##  ##   ##  ##     ##   ####
+######## ##        ##  ########  ########  ##     ## ########     ##
+######   ##        ##  ##     ## ##   ##   ######### ##   ##      ##
+####     ##        ##  ##     ## ##    ##  ##     ## ##    ##     ##
+##       ######## #### ########  ##     ## ##     ## ##     ##    ##
+
+LIBOBJSD=output\debug\AreaManager.obj output\debug\DDLParser.obj output\debug\Error.obj output\debug\Hash.obj output\debug\JSONChecker.obj output\debug\Lexer.obj output\debug\Parser.obj output\debug\Str.obj output\debug\StringArea.obj output\debug\Value.obj
+
+output\debug\ddlparser.lib: $(LIBOBJSD)
+	lib /nologo /out:$@ $**
+
+output\debug\AreaManager.obj: src\AreaManager.h src\GrowableArray.h src\BlockAllocator.h include\DDLParser.h src\AreaManager.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /UNDEBUG /Zi /Od /EHsc /RTC1 /MDd /GS /fp:precise /Zc:forScope /Gd /Fdoutput\debug\ddlparser.pdb /Fo$@ /c src\AreaManager.cpp
+
+output\debug\DDLParser.obj: src\Parser.h src\Value.h src\GrowableArray.h src\Set.h src\Lexer.h src\AreaManager.h src\StringArea.h src\BlockAllocator.h src\Str.h include\DDLParser.h src\Stack.h src\DDLParser.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /UNDEBUG /Zi /Od /EHsc /RTC1 /MDd /GS /fp:precise /Zc:forScope /Gd /Fdoutput\debug\ddlparser.pdb /Fo$@ /c src\DDLParser.cpp
+
+output\debug\Error.obj: src\GrowableArray.h src\Str.h include\DDLParser.h src\Lexer.h src\Error.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /UNDEBUG /Zi /Od /EHsc /RTC1 /MDd /GS /fp:precise /Zc:forScope /Gd /Fdoutput\debug\ddlparser.pdb /Fo$@ /c src\Error.cpp
+
+output\debug\Hash.obj: include\DDLParser.h src\Hash.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /UNDEBUG /Zi /Od /EHsc /RTC1 /MDd /GS /fp:precise /Zc:forScope /Gd /Fdoutput\debug\ddlparser.pdb /Fo$@ /c src\Hash.cpp
+
+output\debug\JSONChecker.obj: src\JSONChecker.h src\JSONChecker.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /UNDEBUG /Zi /Od /EHsc /RTC1 /MDd /GS /fp:precise /Zc:forScope /Gd /Fdoutput\debug\ddlparser.pdb /Fo$@ /c src\JSONChecker.cpp
+
+output\debug\Lexer.obj: src\Tokens.inc src\Str.h src\Error.h src\GrowableArray.h include\DDLParser.h src\Lexer.h src\Lexer.cpp src\Tokens.inc
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /UNDEBUG /Zi /Od /EHsc /RTC1 /MDd /GS /fp:precise /Zc:forScope /Gd /Fdoutput\debug\ddlparser.pdb /Fo$@ /c src\Lexer.cpp
+
+output\debug\Parser.obj: src\Parser.h src\Value.h src\GrowableArray.h src\Set.h src\Lexer.h src\AreaManager.h src\StringArea.h src\JSONChecker.h src\Stack.h src\BlockAllocator.h src\Str.h include\DDLParser.h src\Error.h src\Parser.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /UNDEBUG /Zi /Od /EHsc /RTC1 /MDd /GS /fp:precise /Zc:forScope /Gd /Fdoutput\debug\ddlparser.pdb /Fo$@ /c src\Parser.cpp
+
+output\debug\Str.obj: include\DDLParser.h src\Str.h src\Str.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /UNDEBUG /Zi /Od /EHsc /RTC1 /MDd /GS /fp:precise /Zc:forScope /Gd /Fdoutput\debug\ddlparser.pdb /Fo$@ /c src\Str.cpp
+
+output\debug\StringArea.obj: src\AreaManager.h src\StringArea.h src\Str.h src\GrowableArray.h src\BlockAllocator.h include\DDLParser.h src\StringArea.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /UNDEBUG /Zi /Od /EHsc /RTC1 /MDd /GS /fp:precise /Zc:forScope /Gd /Fdoutput\debug\ddlparser.pdb /Fo$@ /c src\StringArea.cpp
+
+output\debug\Value.obj: src\Value.h src\Str.h src\Value.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /UNDEBUG /Zi /Od /EHsc /RTC1 /MDd /GS /fp:precise /Zc:forScope /Gd /Fdoutput\debug\ddlparser.pdb /Fo$@ /c src\Value.cpp
+
+LIBOBJSR=output\release\AreaManager.obj output\release\DDLParser.obj output\release\Error.obj output\release\Hash.obj output\release\JSONChecker.obj output\release\Lexer.obj output\release\Parser.obj output\release\Str.obj output\release\StringArea.obj output\release\Value.obj
+
+output\release\ddlparser.lib: $(LIBOBJSR)
+	lib /nologo /out:$@ $**
+
+output\release\AreaManager.obj: src\AreaManager.h src\GrowableArray.h src\BlockAllocator.h include\DDLParser.h src\AreaManager.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Zi /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fdoutput\release\ddlparser.pdb /Fo$@ /c src\AreaManager.cpp
+
+output\release\DDLParser.obj: src\Parser.h src\Value.h src\GrowableArray.h src\Set.h src\Lexer.h src\AreaManager.h src\StringArea.h src\BlockAllocator.h src\Str.h include\DDLParser.h src\Stack.h src\DDLParser.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Zi /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fdoutput\release\ddlparser.pdb /Fo$@ /c src\DDLParser.cpp
+
+output\release\Error.obj: src\GrowableArray.h src\Str.h include\DDLParser.h src\Lexer.h src\Error.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Zi /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fdoutput\release\ddlparser.pdb /Fo$@ /c src\Error.cpp
+
+output\release\Hash.obj: include\DDLParser.h src\Hash.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Zi /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fdoutput\release\ddlparser.pdb /Fo$@ /c src\Hash.cpp
+
+output\release\JSONChecker.obj: src\JSONChecker.h src\JSONChecker.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Zi /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fdoutput\release\ddlparser.pdb /Fo$@ /c src\JSONChecker.cpp
+
+output\release\Lexer.obj: src\Tokens.inc src\Str.h src\Error.h src\GrowableArray.h include\DDLParser.h src\Lexer.h src\Lexer.cpp src\Tokens.inc
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Zi /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fdoutput\release\ddlparser.pdb /Fo$@ /c src\Lexer.cpp
+
+output\release\Parser.obj: src\Parser.h src\Value.h src\GrowableArray.h src\Set.h src\Lexer.h src\AreaManager.h src\StringArea.h src\JSONChecker.h src\Stack.h src\BlockAllocator.h src\Str.h include\DDLParser.h src\Error.h src\Parser.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Zi /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fdoutput\release\ddlparser.pdb /Fo$@ /c src\Parser.cpp
+
+output\release\Str.obj: include\DDLParser.h src\Str.h src\Str.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Zi /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fdoutput\release\ddlparser.pdb /Fo$@ /c src\Str.cpp
+
+output\release\StringArea.obj: src\AreaManager.h src\StringArea.h src\Str.h src\GrowableArray.h src\BlockAllocator.h include\DDLParser.h src\StringArea.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Zi /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fdoutput\release\ddlparser.pdb /Fo$@ /c src\StringArea.cpp
+
+output\release\Value.obj: src\Value.h src\Str.h src\Value.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Zi /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fdoutput\release\ddlparser.pdb /Fo$@ /c src\Value.cpp
+
+src\Tokens.inc: src\Tokens.gperf
+	cd src && ..\util\gperf -c -C -l -L C++ -t -7 -m 100 -I --output-file=Tokens.inc Tokens.gperf && cd ..
+
+##       ######## ######## ##     ## ########  #######   ######
+####        ##    ##        ##   ##     ##    ##     ## ##    ##
+######      ##    ##         ## ##      ##           ## ##
+########    ##    ######      ###       ##     #######  ##
+######      ##    ##         ## ##      ##    ##        ##
+####        ##    ##        ##   ##     ##    ##        ##    ##
+##          ##    ######## ##     ##    ##    #########  ######
+
+util\text2c.obj: util\text2c.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c util\text2c.cpp
+
+util\text2c.exe: util\text2c.obj
+	link /nologo /subsystem:console /out:$@ $**
+
+##       ########  ########  ##       ########
+####     ##     ## ##     ## ##          ##
+######   ##     ## ##     ## ##          ##
+######## ##     ## ##     ## ##          ##
+######   ##     ## ##     ## ##          ##
+####     ##     ## ##     ## ##          ##
+##       ########  ########  ########    ##
+
+DDLTOBJS=ddlt\Allocator.obj ddlt\BitfieldIf.obj ddlt\CompilerIf.obj ddlt\DefinitionIf.obj ddlt\SelectIf.obj ddlt\StructIf.obj ddlt\TagIf.obj ddlt\Util.obj ddlt\ddlt.obj
+LUAFILES=ddlt\ddlc.h ddlt\extra.h ddlt\cpp.h ddlt\hpp.h
+
+ddlt\ddlt.exe: $(DDLTOBJS) output\release\ddlparser.lib
+	link /nologo /subsystem:console /out:$@ $** lua\lua-x86.lib
+
+ddlt\Allocator.obj: ddlt\Allocator.h include\DDLParser.h ddlt\Allocator.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c ddlt\Allocator.cpp
+
+ddlt\BitfieldIf.obj: ddlt\Util.h ddlt\DefinitionIf.h ddlt\BitfieldIf.h include\DDLParser.h ddlt\BitfieldIf.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c ddlt\BitfieldIf.cpp
+
+ddlt\CompilerIf.obj: ddlt\Allocator.h ddlt\DefinitionIf.h include\DDLParser.h ddlt\CompilerIf.h ddlt\CompilerIf.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c ddlt\CompilerIf.cpp
+
+ddlt\DefinitionIf.obj: ddlt\Util.h ddlt\SelectIf.h ddlt\BitfieldIf.h ddlt\StructIf.h ddlt\DefinitionIf.h include\DDLParser.h ddlt\DefinitionIf.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c ddlt\DefinitionIf.cpp
+
+ddlt\SelectIf.obj: ddlt\Util.h ddlt\SelectIf.h include\DDLParser.h ddlt\DefinitionIf.h ddlt\SelectIf.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c ddlt\SelectIf.cpp
+
+ddlt\StructIf.obj: ddlt\Util.h ddlt\SelectIf.h ddlt\BitfieldIf.h ddlt\StructIf.h ddlt\DefinitionIf.h include\DDLParser.h ddlt\StructIf.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c ddlt\StructIf.cpp
+
+ddlt\TagIf.obj: ddlt\TagIf.h ddlt\SelectIf.h ddlt\BitfieldIf.h ddlt\StructIf.h ddlt\DefinitionIf.h include\DDLParser.h ddlt\Util.h ddlt\TagIf.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c ddlt\TagIf.cpp
+
+ddlt\Util.obj: include\DDLParser.h ddlt\Util.h ddlt\Util.cpp
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c ddlt\Util.cpp
+
+ddlt\ddlt.obj: ddlt\Util.h ddlt\cpp.h ddlt\hpp.h ddlt\extra.h ddlt\Allocator.h ddlt\ddlc.h include\DDLParser.h ddlt\CompilerIf.h ddlt\ddlt.cpp $(LUAFILES)
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c ddlt\ddlt.cpp
+
+ddlt\extra.h: ddlt\extra.lua util\text2c.exe
+
+ddlt\ddlc.h: ddlt\ddlc.lua util\text2c.exe
+
+ddlt\cpp.h: ddlt\cpp.lt util\text2c.exe
+
+ddlt\hpp.h: ddlt\hpp.lt util\text2c.exe
+
+##       ######## ########  ######  ########
+####        ##    ##       ##    ##    ##
+######      ##    ##       ##          ##
+########    ##    ######    ######     ##
+######      ##    ##             ##    ##
+####        ##    ##       ##    ##    ##
+##          ##    ########  ######     ##
+
+test\test_ddl.h: ddlt\ddlt.exe test\test.ddl
+	ddlt\ddlt -i test\test.ddl -t hpp -o test\test_ddl.h
+
+test\test_ddl.cpp: ddlt\ddlt.exe test\test.ddl
+	ddlt\ddlt -i test\test.ddl -t cpp -I test_ddl.h -o test\test_ddl.cpp
+
+test\test_ddl.obj: test\test_ddl.cpp test\test_ddl.h
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c test\test_ddl.cpp
+
+test\test.obj: test\test.cpp test\test_ddl.h
+	cl /Iinclude /Ilua /nologo /D__WIN__ /Dsnprintf=_snprintf /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c test\test.cpp
+
+test\test.exe: test\test.obj test\test_ddl.obj
+	link /nologo /subsystem:console /out:$@ $**
+	echo "Running test..."
+	test\test
+
+##        ######  ##       ########    ###    ##    ##
+####     ##    ## ##       ##         ## ##   ###   ##
+######   ##       ##       ##        ##   ##  ####  ##
+######## ##       ##       ######   ##     ## ## ## ##
+######   ##       ##       ##       ######### ##  ####
+####     ##    ## ##       ##       ##     ## ##   ###
+##        ######  ######## ######## ##     ## ##    ##
+
+clean:
+	util\rmfiles output\debug\ddlparser.lib $(LIBOBJSD) output\release\ddlparser.lib $(LIBOBJSR) src\Tokens.inc ddlt\ddlt.exe $(DDLTOBJS) etc\text2c.exe etc\text2c.obj $(LUAFILES) test\test_ddl.h test\test_ddl.cpp test\test_ddl.obj test\test.obj test\test.exe util\text2c.exe util\text2c.obj output\debug\ddlparser.pdb output\release\ddlparser.pdb
