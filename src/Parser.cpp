@@ -358,10 +358,7 @@ namespace DDLParser
     }
 
     // Repeat as long as we have more selects, bitfields and/or structures.
-    while ( m_Current->m_ID == tStruct || m_Current->m_ID == tBitfield || m_Current->m_ID == tSelect || m_Current->m_ID == tTypedef )
-    {
-      ;
-    }
+    while ( m_Current->m_ID == tStruct || m_Current->m_ID == tBitfield || m_Current->m_ID == tSelect || m_Current->m_ID == tTypedef );
 
     // Save the total size of the definition.
     m_DDL->m_TotalSize = ( uint32_t ) m_BinRep.m_Allocator->GetCurrentOffset();

@@ -44,10 +44,7 @@ namespace DDLParser
       }
 
       // Repeat until we reach the end of the source code.
-      while ( token.m_ID != tEOF )
-      {
-        ;
-      }
+      while ( token.m_ID != tEOF );
 
       // No errors reported.
       error = NULL;
@@ -341,10 +338,7 @@ namespace DDLParser
           }
 
           // If the next character isn't a slash to close the comment, start looking for another '*'.
-          while ( Get() != '/' )
-          {
-            ;
-          }
+          while ( Get() != '/' );
 
           // Skip the slash.
           Skip();

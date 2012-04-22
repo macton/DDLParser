@@ -1,10 +1,6 @@
-struct Keyword
-{
-  const char* name;
-  TokenID m_Token;
-};
+struct Keyword { const char* name; TokenID m_Token; };
 //
-% %
+%%
 author,      tAuthor
 description, tDescription
 value,       tValue
