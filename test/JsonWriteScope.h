@@ -15,9 +15,6 @@ class JsonWriteScope
     }
     ~JsonWriteScope()
     {
-      m_Output[0] = 0;
-      m_OutputSize++;
-      m_Output++;
     }
 
     void WriteComma()
