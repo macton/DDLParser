@@ -1,0 +1,236 @@
+/*!
+local function generateSelect( select )
+  */
+  ///*= ( '=' ):rep( 80 ) */
+  // Select /*= select:getName() */
+  ///*= ( '=' ):rep( 80 ) */
+
+  void /*= select:getName() */::Set( uint32_t value )
+  {
+    switch ( value ) // Check for a valid value.
+    {
+      /*! for _, item in select:items() do */
+        case /*= item:getName() */:
+      /*! end */
+      m_Value = value;
+      break;
+    }
+  }
+
+  const char* /*= select:getName() */::GetName( uint32_t value )
+  {
+    switch ( value ) // Check for a valid value.
+    {
+      /*! for _, item in select:items() do */
+      case /*= item:getName() */:
+        return "/*= item:getName() */";
+        break;
+      /*! end */
+      default:
+        return "unknown";
+    }
+  }
+
+  bool /*= select:getName() */::WriteJson( JsonWriteScope* parent_scope, const char* name )
+  {
+    parent_scope->WriteString( GetName(m_Value), name );
+    return true;
+  }
+
+  /*!
+end
+
+local function generateBitfield( bitfield )
+  */
+  ///*= ( '=' ):rep( 80 ) */
+  // Bitfield /*= bitfield:getName() */
+  ///*= ( '=' ):rep( 80 ) */
+
+  bool /*= bitfield:getName() */::WriteJson( JsonWriteScope* parent_scope, const char* name )
+  {
+    parent_scope->WriteUInt( m_Value, name );
+    return true;
+  }
+
+  /*!
+end
+
+local function generateStruct( struct )
+*/
+  ///*= ( '=' ):rep( 80 ) */
+  // Struct /*= struct:getName() */
+  ///*= ( '=' ):rep( 80 ) */
+
+  bool /*= struct:getName() */::Init()
+  {
+    bool ok = true;
+
+    /*!
+    if struct:getBase() then */ok = ok && /*= struct:getBase() */::Init();/*! end
+
+    for _, field in struct:ownFields() do
+      if field:getArrayType() == 'scalar' then
+        if field:getDeclaredType() then
+          */
+          ok = ok && m_/*= field:getName() */.Init();
+          /*!
+          if field:getValue() then
+            if field:getType() == 'struct' then
+              dumpStructValue( { valueinfo = field } )
+            elseif field:getType() == 'select' then
+              */
+              m_/*= field:getName() */.Set( /*= field:getDeclaredType():getName() */::/*= field:getValue():getName() */ ); // /*= field:getValue():getName() */
+              /*!
+            else
+              if type( field:getValue() ) ~= 'table' then
+                */
+                m_/*= field:getName() */.Set( /*= field:getDeclaredType():getName() */::/*= field:getValue():getName() */ ); // /*= field:getValue():getName() */
+                /*!
+              else
+                */m_/*= field:getName() */.Set( /*!
+                for index, flag in ipairs( field:getValue() ) do
+                  if index ~=1 then emit( '|' ) end
+
+                  emit( field:getDeclaredType():getName(), '::', flag:getName() )
+                end
+                */ );/*!
+              end
+            end
+          end
+        else
+          if field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+            if #getFieldValue( field ) > 2 then
+              */
+              strncpy( m_/*= field:getName() */, /*= getFieldValue( field ) */, sizeof( m_/*= field:getName() */ ) );
+              m_/*= field:getName() */[ sizeof( m_/*= field:getName() */ ) - 1 ] = 0;
+              /*!
+            else
+              */
+              m_/*= field:getName() */[ 0 ] = 0;
+              /*!
+            end
+          else
+            */
+            m_/*= field:getName() */ = /*= getFieldValue( field ) */;
+            /*!
+          end
+        end
+      end
+    end
+    */
+
+    return ok;
+  }
+
+  bool /*= struct:getName() */::WriteJson( char*& output, size_t& size, const char* name )
+  {
+    JsonWriteScope  json( output, size );
+    return WriteJson( &json, name );
+  }
+    
+  bool /*= struct:getName() */::WriteJson( JsonWriteScope* parent_scope, const char* name )
+  {
+    bool ok = true;
+
+    JsonWriteScopeObject json( parent_scope, name );
+
+    /*!
+    if struct:getBase() then */ok = ok && /*= struct:getBase() */::WriteJsonObject( &json, "/*= struct:getBase():getName() */" );/*! end
+    */
+
+    /*!
+    for _, field in struct:ownFields() do
+      if field:getDeclaredType() then
+        */
+        ok = ok && m_/*= field:getName() */.WriteJson( &json, "/*= field:getName() */" );
+        /*!
+      elseif field:getType() == 'boolean' then
+        */
+        json.WriteBool( m_/*= field:getName() */, "/*= field:getName() */" );
+        /*!
+      elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+        */
+        json.WriteString( m_/*= field:getName() */, "/*= field:getName() */" );
+        /*!
+      elseif field:getType() == 'int8' or field:getType() == 'int16' or field:getType() == 'int32' or field:getType() == 'int64' then
+        */
+        json.WriteInt( m_/*= field:getName() */, "/*= field:getName() */" );
+        /*!
+      elseif field:getType() == 'uint8' or field:getType() == 'uint16' or field:getType() == 'uint32' or field:getType() == 'uint64' then
+        */
+        json.WriteUInt( m_/*= field:getName() */, "/*= field:getName() */" );
+        /*!
+      elseif field:getType() == 'uint8' or field:getType() == 'uint16' or field:getType() == 'uint32' or field:getType() == 'uint64' then
+        */
+        json.WriteUInt( m_/*= field:getName() */, "/*= field:getName() */" );
+        /*!
+      elseif field:getType() == 'tuid' then
+        */
+        json.WriteUInt( m_/*= field:getName() */, "/*= field:getName() */" );
+        /*!
+      elseif field:getType() == 'float32' or field:getType() == 'float64' then
+        */
+        json.WriteFloat( m_/*= field:getName() */, "/*= field:getName() */" );
+        /*!
+      else
+        */
+        json.WriteString( "m_/*= field:getName() */", "unsupported" ); // /*= field:getType() */
+        /*!
+      end
+    
+    end
+    */
+    return ok;
+  }
+/*!
+end
+
+local function generate( ddlc, first_aggregate, settings )
+  local ddl = ddlc:getDefinition()
+
+  for _, aggregate in ddl:aggregates() do
+    if aggregate:getType() == 'select' then
+      generateSelect( aggregate )
+    elseif aggregate:getType() == 'bitfield' then
+      generateBitfield( aggregate )
+    elseif aggregate:getType() == 'struct' then
+      generateStruct( aggregate )
+    else
+      error( 'Don\'t know how to generate code for ' .. aggregate:getType() )
+    end
+  end
+end
+
+function main( ddlc, first_aggregate, settings )
+  if settings[ '--help' ] then
+    io.write(
+      'CPP template arguments\n',
+      '\n',
+      '-h --help                      Shows this help page\n',
+      '-o --output-file               Defines the output file\n',
+      '-I --include                   #includes a file in the generated code\n',
+      '\n'
+    )
+    return
+  end
+
+  checkSettings( settings, {
+    { short_name = '-o', long_name = '--output-file', mandatory = true, min = 1, max = 1 },
+    { short_name = '-I', long_name = '--include', mandatory = false, min = 1 }
+  } )
+
+  local output = settings[ '--output-file' ][ 1 ]
+  setOutputFile( output )
+
+  local disclaimer = ddlc:getDisclaimer()
+  */
+  ///*= ( '=' ):rep( #disclaimer + 1 ) */
+  // /*= disclaimer */
+  ///*= ( '=' ):rep( #disclaimer + 1 ) */
+  /*! for _, include in ipairs( settings[ '--include' ] or {} ) do */
+    #include "/*= include */"
+  /*! end */
+  /*!
+  generate( ddlc, first_aggregate, settings )
+end
+*/

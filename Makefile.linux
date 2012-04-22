@@ -6,7 +6,7 @@
 .lt.h:
 	util/text2c $< $(*F)_template > $@
 
-all: output/debug/libddlparser.a output/release/libddlparser.a ddlt/ddlt test/test
+all: output/debug/libddlparser.a output/release/libddlparser.a ddlt/ddlt test/test test/test_nacl
 
 ##       ##       #### ########  ########     ###    ########  ##    ##
 ####     ##        ##  ##     ## ##     ##   ## ##   ##     ##  ##  ##
@@ -114,7 +114,7 @@ util/text2c: util/text2c.o
 LUAINC=/usr/include/lua5.1/
 LUALIB=lua5.1
 DDLTOBJS=ddlt/Allocator.o ddlt/BitfieldIf.o ddlt/CompilerIf.o ddlt/DefinitionIf.o ddlt/SelectIf.o ddlt/StructIf.o ddlt/TagIf.o ddlt/Util.o ddlt/ddlt.o
-LUAFILES=ddlt/ddlc.h ddlt/extra.h ddlt/cpp.h ddlt/hpp.h
+LUAFILES=ddlt/ddlc.h ddlt/extra.h ddlt/cpp.h ddlt/hpp.h ddlt/nacl_cpp.h ddlt/nacl_hpp.h
 
 ddlt/ddlt: $(DDLTOBJS) output/release/libddlparser.a
 	g++ -o $@ $+ -l$(LUALIB)
@@ -154,6 +154,10 @@ ddlt/cpp.h: ddlt/cpp.lt util/text2c
 
 ddlt/hpp.h: ddlt/hpp.lt util/text2c
 
+ddlt/nacl_cpp.h: ddlt/nacl_cpp.lt util/text2c
+
+ddlt/nacl_hpp.h: ddlt/nacl_hpp.lt util/text2c
+
 ##       ######## ########  ######  ########
 ####        ##    ##       ##    ##    ##
 ######      ##    ##       ##          ##
@@ -179,6 +183,25 @@ test/test: test/test.o test/test_ddl.o
 	echo "Running test..."
 	test/test
 
+test/test_nacl_ddl.h: ddlt/ddlt test/test.ddl
+	ddlt/ddlt -i test/test.ddl -t nacl_hpp -o test/test_nacl_ddl.h
+	astyle test/test_nacl_ddl.h
+
+test/test_nacl_ddl.cpp: ddlt/ddlt test/test.ddl
+	ddlt/ddlt -i test/test.ddl -t nacl_cpp -I test_nacl_ddl.h -o test/test_nacl_ddl.cpp
+	astyle test/test_nacl_ddl.cpp
+
+test/test_nacl_ddl.o: test/test_nacl_ddl.cpp test/test_nacl_ddl.h
+	g++ -O2 -Iinclude -Wall -Wno-format -o $@ -c test/test_nacl_ddl.cpp
+
+test/test_nacl.o: test/test_nacl.cpp test/test_nacl_ddl.h test/test_nacl_ddl.cpp
+	g++ -O2 -Iinclude -Wall -Wno-format -o $@ -c test/test_nacl.cpp
+
+test/test_nacl: test/test_nacl.o test/test_nacl_ddl.o
+	g++ -o $@ $+
+	echo "Running test_nacl..."
+	test/test_nacl
+
 ##        ######  ##       ########    ###    ##    ##
 ####     ##    ## ##       ##         ## ##   ###   ##
 ######   ##       ##       ##        ##   ##  ####  ##
@@ -188,4 +211,4 @@ test/test: test/test.o test/test_ddl.o
 ##        ######  ######## ######## ##     ## ##    ##
 
 clean:
-	rm -f output/debug/libddlparser.a $(LIBOBJSD) output/release/libddlparser.a $(LIBOBJSR) src/Tokens.inc ddlt/ddlt $(DDLTOBJS) etc/text2c etc/text2c.o $(LUAFILES) test/test_ddl.h test/test_ddl.cpp test/test_ddl.o test/test.o test/test util/text2c util/text2c.o output/debug/ddlparser.pdb output/release/ddlparser.pdb
+	rm -f output/debug/libddlparser.a $(LIBOBJSD) output/release/libddlparser.a $(LIBOBJSR) src/Tokens.inc ddlt/ddlt $(DDLTOBJS) etc/text2c etc/text2c.o $(LUAFILES) test/test_ddl.h test/test_ddl.cpp test/test util/text2c util/text2c.o output/debug/ddlparser.pdb output/release/ddlparser.pdb test/test_nacl_ddl.h test/test_nacl_ddl.cpp test/test_nacl test/*.o
