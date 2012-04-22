@@ -14,11 +14,11 @@ namespace DDLParser
         kInt, kDouble, kString
       };
 
-      Value(bool valid = false);
-      Value(int64_t value, bool valid = true);
-      Value(double value, bool valid = true);
-      Value(const Str& value, bool valid = true);
-      Value(const Value& other);
+      Value ( bool valid = false );
+      Value ( int64_t value, bool valid = true );
+      Value ( double value, bool valid = true );
+      Value ( const Str& value, bool valid = true );
+      Value ( const Value& other );
 
       bool    IsValid() const;
       Type    GetType() const;
@@ -38,24 +38,24 @@ namespace DDLParser
       bool IsFloat32() const;
       bool IsFloat64() const;
 
-      Value operator||(const Value& other);
-      Value operator&&(const Value& other);
-      Value operator|(const Value& other);
-      Value operator^(const Value& other);
-      Value operator&(const Value& other);
-      Value operator==(const Value& other);
-      Value operator!=(const Value& other);
-      Value operator<(const Value& other);
-      Value operator>(const Value& other);
-      Value operator<=(const Value& other);
-      Value operator>=(const Value& other);
-      Value operator<<(const Value& other);
-      Value operator>>(const Value& other);
-      Value operator+(const Value& other);
-      Value operator-(const Value& other);
-      Value operator*(const Value& other);
-      Value operator/(const Value& other);
-      Value operator%(const Value& other);
+      Value operator|| ( const Value& other );
+      Value operator&& ( const Value& other );
+      Value operator| ( const Value& other );
+      Value operator^ ( const Value& other );
+      Value operator& ( const Value& other );
+      Value operator== ( const Value& other );
+      Value operator!= ( const Value& other );
+      Value operator< ( const Value& other );
+      Value operator> ( const Value& other );
+      Value operator<= ( const Value& other );
+      Value operator>= ( const Value& other );
+      Value operator<< ( const Value& other );
+      Value operator>> ( const Value& other );
+      Value operator+ ( const Value& other );
+      Value operator- ( const Value& other );
+      Value operator* ( const Value& other );
+      Value operator/ ( const Value& other );
+      Value operator% ( const Value& other );
       Value operator-();
       Value operator~();
       Value operator!();

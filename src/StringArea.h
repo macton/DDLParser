@@ -7,15 +7,15 @@ namespace DDLParser
 
   class StringArea
   {
-  public:
-    StringArea(Area* area);
+    public:
+      StringArea ( Area* area );
 
-    const char* Add(const Str& string);
-    const char* AddRaw(const Str& string);
+      const char* Add ( const Str& string );
+      const char* AddRaw ( const Str& string );
 
-    Area* GetArea() const;
+      Area* GetArea() const;
 
-  private:
-    Area* m_Area;
+    private:
+      Area* m_Area;
   };
 };

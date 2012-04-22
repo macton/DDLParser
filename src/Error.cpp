@@ -8,326 +8,323 @@
 
 namespace DDLParser
 {
-  static bool BuildErrorMsg( char* out, uint32_t out_size, const char* format, const Token& token, const char* more = NULL )
+  static bool BuildErrorMsg ( char* out, uint32_t out_size, const char* format, const Token& token, const char* more = NULL )
   {
-    char* file_name = (char*)alloca( token.m_FileName.GetLength() + 1 );
-    token.m_FileName.ToCStr( file_name );
-
+    char* file_name = ( char* ) alloca ( token.m_FileName.GetLength() + 1 );
+    token.m_FileName.ToCStr ( file_name );
     char* lexeme = NULL;
-    
+
     if ( more == NULL )
     {
-      lexeme = (char*)alloca( token.m_Lexeme.GetLength() + 1 );
-      token.m_Lexeme.ToCStr( lexeme );
+      lexeme = ( char* ) alloca ( token.m_Lexeme.GetLength() + 1 );
+      token.m_Lexeme.ToCStr ( lexeme );
     }
-    
-    int num_written = snprintf( out, out_size, "%s(%u) : " ERROR_HEADER, file_name, token.m_Line );
-    snprintf( out + num_written, out_size - (uint32_t)num_written, format, more == NULL ? lexeme : more );
 
+    int num_written = snprintf ( out, out_size, "%s(%u) : " ERROR_HEADER, file_name, token.m_Line );
+    snprintf ( out + num_written, out_size - ( uint32_t ) num_written, format, more == NULL ? lexeme : more );
     return false;
   }
 
   bool
-  ErrorUnterminatedLiteral(char* out, uint32_t out_size, const Token& token)
+  ErrorUnterminatedLiteral ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Unterminated literal", token );
+    return BuildErrorMsg ( out, out_size, "Unterminated literal", token );
   }
 
   bool
-  ErrorInvalidEscapeSequence(char* out, uint32_t out_size, const Token& token, const char* value_string )
+  ErrorInvalidEscapeSequence ( char* out, uint32_t out_size, const Token& token, const char* value_string )
   {
-    return BuildErrorMsg( out, out_size, "Invalid escape sequence in: \"%s\"", token, value_string );
+    return BuildErrorMsg ( out, out_size, "Invalid escape sequence in: \"%s\"", token, value_string );
   }
 
   bool
-  ErrorUnterminatedComment(char* out, uint32_t out_size, const Token& token)
+  ErrorUnterminatedComment ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Unterminated comment", token );
+    return BuildErrorMsg ( out, out_size, "Unterminated comment", token );
   }
 
   bool
-  ErrorInvalidCharacter(char* out, uint32_t out_size, const Token& token)
+  ErrorInvalidCharacter ( char* out, uint32_t out_size, const Token& token )
   {
-    char invalid = token.m_Lexeme.GetChars()[0];
+    char invalid = token.m_Lexeme.GetChars() [0];
     char more[ 8 ];
 
-    if (invalid >= 32 || invalid <= 126)
+    if ( invalid >= 32 || invalid <= 126 )
     {
-      snprintf( more, ARRAY_SIZE( more ), "%c", invalid );
+      snprintf ( more, ARRAY_SIZE ( more ), "%c", invalid );
     }
     else
     {
-      snprintf( more, ARRAY_SIZE( more ), "\\%x02x", invalid );
+      snprintf ( more, ARRAY_SIZE ( more ), "\\%x02x", invalid );
     }
-    return BuildErrorMsg( out, out_size, "Invalid character: '%s'", token, more );
+
+    return BuildErrorMsg ( out, out_size, "Invalid character: '%s'", token, more );
   }
 
   bool
-  ErrorUnexpectedToken(char* out, uint32_t out_size, const Token& token)
+  ErrorUnexpectedToken ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Unexpected \"%s\"", token );
+    return BuildErrorMsg ( out, out_size, "Unexpected \"%s\"", token );
   }
 
   bool
-  ErrorDuplicateIdentifier(char* out, uint32_t out_size, const Token& token)
+  ErrorDuplicateIdentifier ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Duplicate identifier \"%s\"", token );
+    return BuildErrorMsg ( out, out_size, "Duplicate identifier \"%s\"", token );
   }
 
   bool
-  ErrorDuplicateIdentifier(char* out, uint32_t out_size, const Token& token, const Token& duplicate)
+  ErrorDuplicateIdentifier ( char* out, uint32_t out_size, const Token& token, const Token& duplicate )
   {
-    char* file_name = (char*)alloca( token.m_FileName.GetLength() + 1 );
-    token.m_FileName.ToCStr( file_name );
-    char* identifier = (char*)alloca( token.m_Lexeme.GetLength() + 1 );
-    token.m_Lexeme.ToCStr( identifier );
+    char* file_name = ( char* ) alloca ( token.m_FileName.GetLength() + 1 );
+    token.m_FileName.ToCStr ( file_name );
+    char* identifier = ( char* ) alloca ( token.m_Lexeme.GetLength() + 1 );
+    token.m_Lexeme.ToCStr ( identifier );
 
     if ( duplicate.m_ID != tEOF )
     {
-      char* dup_file_name = (char*)alloca( duplicate.m_FileName.GetLength() + 1 );
-      duplicate.m_FileName.ToCStr( dup_file_name );
-
-      snprintf( out, out_size, "%s(%u) : " ERROR_HEADER "Duplicate identifier \"%s\", first seen at %s(%u)", file_name, token.m_Line, identifier, dup_file_name, duplicate.m_Line );
+      char* dup_file_name = ( char* ) alloca ( duplicate.m_FileName.GetLength() + 1 );
+      duplicate.m_FileName.ToCStr ( dup_file_name );
+      snprintf ( out, out_size, "%s(%u) : " ERROR_HEADER "Duplicate identifier \"%s\", first seen at %s(%u)", file_name, token.m_Line, identifier, dup_file_name, duplicate.m_Line );
     }
     else
     {
-      snprintf( out, out_size, "%s(%u) : " ERROR_HEADER "Duplicate identifier \"%s\", first seen in a dependent file", file_name, token.m_Line, identifier );
+      snprintf ( out, out_size, "%s(%u) : " ERROR_HEADER "Duplicate identifier \"%s\", first seen in a dependent file", file_name, token.m_Line, identifier );
     }
+
     return false;
   }
 
   bool
-  ErrorDuplicateInfo(char* out, uint32_t out_size, const Token& token)
+  ErrorDuplicateInfo ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Duplicate tag \"%s\"", token );
+    return BuildErrorMsg ( out, out_size, "Duplicate tag \"%s\"", token );
   }
 
   bool
-  ErrorInvalidInfo(char* out, uint32_t out_size, const Token& token)
+  ErrorInvalidInfo ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Invalid tag \"%s\"", token );
+    return BuildErrorMsg ( out, out_size, "Invalid tag \"%s\"", token );
   }
 
   bool
-  ErrorUnknownIdentifier(char* out, uint32_t out_size, const Token& token)
+  ErrorUnknownIdentifier ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Unknown identifier \"%s\"", token );
+    return BuildErrorMsg ( out, out_size, "Unknown identifier \"%s\"", token );
   }
 
   bool
-  ErrorValueDoesNotFit(char* out, uint32_t out_size, const Token& token)
+  ErrorValueDoesNotFit ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Value does not fit in destination", token );
+    return BuildErrorMsg ( out, out_size, "Value does not fit in destination", token );
   }
 
   bool
-  ErrorInvalidBitCombination(char* out, uint32_t out_size, const Token& token)
+  ErrorInvalidBitCombination ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Invalid combination of flags in bitfield value", token );
+    return BuildErrorMsg ( out, out_size, "Invalid combination of flags in bitfield value", token );
   }
 
   bool
-  ErrorInvalidSelectValue(char* out, uint32_t out_size, const Token& token)
+  ErrorInvalidSelectValue ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Invalid select value \"%s\"", token );
+    return BuildErrorMsg ( out, out_size, "Invalid select value \"%s\"", token );
   }
 
   bool
-  ErrorTypeMismatch(char* out, uint32_t out_size, const Token& token)
+  ErrorTypeMismatch ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Type mismatch", token );
+    return BuildErrorMsg ( out, out_size, "Type mismatch", token );
   }
 
   bool
-  ErrorUnspecifiedDefaultValue(char* out, uint32_t out_size, const Token& token)
+  ErrorUnspecifiedDefaultValue ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Default value unspecified", token );
+    return BuildErrorMsg ( out, out_size, "Default value unspecified", token );
   }
 
   bool
-  ErrorInvalidBitfieldValue(char* out, uint32_t out_size, const Token& token)
+  ErrorInvalidBitfieldValue ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Invalid bitfield value", token );
+    return BuildErrorMsg ( out, out_size, "Invalid bitfield value", token );
   }
 
   bool
-  ErrorDuplicateBitfieldValue(char* out, uint32_t out_size, const Token& token)
+  ErrorDuplicateBitfieldValue ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Duplicate bitfield value", token );
+    return BuildErrorMsg ( out, out_size, "Duplicate bitfield value", token );
   }
 
   bool
-  ErrorTerminalExpected(char* out, uint32_t out_size, const Token& token)
+  ErrorTerminalExpected ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Terminal expected", token );
+    return BuildErrorMsg ( out, out_size, "Terminal expected", token );
   }
 
   bool
-  ErrorMaximumNumberOfFlagsExceeded(char* out, uint32_t out_size, const Token& token)
+  ErrorMaximumNumberOfFlagsExceeded ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Maximum number of flags in a bitfield exceeded", token );
+    return BuildErrorMsg ( out, out_size, "Maximum number of flags in a bitfield exceeded", token );
   }
 
   bool
-  ErrorDuplicateDefault(char* out, uint32_t out_size, const Token& token)
+  ErrorDuplicateDefault ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Duplicate default value in select or bitfield", token );
+    return BuildErrorMsg ( out, out_size, "Duplicate default value in select or bitfield", token );
   }
 
   bool
-  ErrorIntegerExpressionExpected(char* out, uint32_t out_size, const Token& token)
+  ErrorIntegerExpressionExpected ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Integer expression expected", token );
+    return BuildErrorMsg ( out, out_size, "Integer expression expected", token );
   }
 
   bool
-  ErrorArraySizeIsZero(char* out, uint32_t out_size, const Token& token)
+  ErrorArraySizeIsZero ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Array size must be greater than zero", token );
+    return BuildErrorMsg ( out, out_size, "Array size must be greater than zero", token );
   }
 
   bool
-  ErrorVariableSizedArrayCannotHaveDefaultValue(char* out, uint32_t out_size, const Token& token)
+  ErrorVariableSizedArrayCannotHaveDefaultValue ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Variable-sized arrays cannot have default values", token );
+    return BuildErrorMsg ( out, out_size, "Variable-sized arrays cannot have default values", token );
   }
 
   bool
-  ErrorHashmapCannotHaveDefaultValue(char* out, uint32_t out_size, const Token& token)
+  ErrorHashmapCannotHaveDefaultValue ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Hashmaps cannot have default values", token );
+    return BuildErrorMsg ( out, out_size, "Hashmaps cannot have default values", token );
   }
 
   bool
-  ErrorWrongNumberOfDefaultValues(char* out, uint32_t out_size, const Token& token, uint32_t expected_count, uint32_t found_count)
+  ErrorWrongNumberOfDefaultValues ( char* out, uint32_t out_size, const Token& token, uint32_t expected_count, uint32_t found_count )
   {
     char more[ 48 ];
-    snprintf( more, ARRAY_SIZE( more ), "%u but found %u", expected_count, found_count );
-
-    return BuildErrorMsg( out, out_size, "Wrong number of default values in array: expected %s", token, more );
+    snprintf ( more, ARRAY_SIZE ( more ), "%u but found %u", expected_count, found_count );
+    return BuildErrorMsg ( out, out_size, "Wrong number of default values in array: expected %s", token, more );
   }
 
   bool
-  ErrorInvalidTypeForExtensions(char* out, uint32_t out_size, const Token& token)
+  ErrorInvalidTypeForExtensions ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Extensions cannot be used with this data type", token );
+    return BuildErrorMsg ( out, out_size, "Extensions cannot be used with this data type", token );
   }
 
   bool
-  ErrorInvalidTypeForVaultHints(char* out, uint32_t out_size, const Token& token)
+  ErrorInvalidTypeForVaultHints ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "VaultHints cannot be used with this data type", token );
+    return BuildErrorMsg ( out, out_size, "VaultHints cannot be used with this data type", token );
   }
 
   bool
-  ErrorReservedKeyword(char* out, uint32_t out_size, const Token& token)
+  ErrorReservedKeyword ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Reserved keyword \"%s\"", token );
+    return BuildErrorMsg ( out, out_size, "Reserved keyword \"%s\"", token );
   }
 
   bool
-  ErrorEmptyRange(char* out, uint32_t out_size, const Token& token)
+  ErrorEmptyRange ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Numeric range is empty (minimum value is greater than maximum value)", token );
+    return BuildErrorMsg ( out, out_size, "Numeric range is empty (minimum value is greater than maximum value)", token );
   }
 
   bool
-  ErrorInvalidTypeForRange(char* out, uint32_t out_size, const Token& token)
+  ErrorInvalidTypeForRange ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Only numeric fields can have ranges", token );
+    return BuildErrorMsg ( out, out_size, "Only numeric fields can have ranges", token );
   }
 
   bool
-  ErrorDefaultValueOutOfRange(char* out, uint32_t out_size, const Token& token)
+  ErrorDefaultValueOutOfRange ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Default value is out of the specified range", token );
+    return BuildErrorMsg ( out, out_size, "Default value is out of the specified range", token );
   }
 
   bool
-  ErrorInvalidRangeStep(char* out, uint32_t out_size, const Token& token)
+  ErrorInvalidRangeStep ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Range step must be greater than zero", token );
+    return BuildErrorMsg ( out, out_size, "Range step must be greater than zero", token );
   }
 
   bool
-  ErrorInvalidTypeForSize(char* out, uint32_t out_size, const Token& token)
+  ErrorInvalidTypeForSize ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Only string fields can have size", token );
+    return BuildErrorMsg ( out, out_size, "Only string fields can have size", token );
   }
 
   bool
-  ErrorInvalidSize(char* out, uint32_t out_size, const Token& token)
+  ErrorInvalidSize ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Invalid size", token );
+    return BuildErrorMsg ( out, out_size, "Invalid size", token );
   }
 
   bool
-  ErrorFileExtensionsBitfieldNotFound(char* out, uint32_t out_size, const Token& token)
+  ErrorFileExtensionsBitfieldNotFound ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "__FILE_EXTENSIONS bitfield not declared", token );
+    return BuildErrorMsg ( out, out_size, "__FILE_EXTENSIONS bitfield not declared", token );
   }
 
   bool
-  ErrorTargetsBitfieldNotFound(char* out, uint32_t out_size, const Token& token)
+  ErrorTargetsBitfieldNotFound ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "__TARGETS bitfield not declared", token );
+    return BuildErrorMsg ( out, out_size, "__TARGETS bitfield not declared", token );
   }
 
   bool
-  ErrorArrayNotDynamic(char* out, uint32_t out_size, const Token& token)
+  ErrorArrayNotDynamic ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "\"%s\" is not a dynamic array", token );
+    return BuildErrorMsg ( out, out_size, "\"%s\" is not a dynamic array", token );
   }
 
   bool
-  ErrorArrayTypeNotNative(char* out, uint32_t out_size, const Token& token)
+  ErrorArrayTypeNotNative ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "\"%s\" is not of a native type", token );
+    return BuildErrorMsg ( out, out_size, "\"%s\" is not of a native type", token );
   }
 
   bool
-  ErrorSelectExpected( char* out, uint32_t out_size, const Token& token )
+  ErrorSelectExpected ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "\"%s\" is not a select", token );
+    return BuildErrorMsg ( out, out_size, "\"%s\" is not a select", token );
   }
 
   bool
-  ErrorItemNotFound( char* out, uint32_t out_size, const Token& token )
+  ErrorItemNotFound ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "\"%s\" is not a valid item in the select", token );
+    return BuildErrorMsg ( out, out_size, "\"%s\" is not a valid item in the select", token );
   }
 
   bool
-  ErrorInvalidHashmapKey( char* out, uint32_t out_size, const Token& token )
+  ErrorInvalidHashmapKey ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "\"%s\" is not a valid key for a hashmap", token );
+    return BuildErrorMsg ( out, out_size, "\"%s\" is not a valid key for a hashmap", token );
   }
 
   bool
-  ErrorInvalidDirective( char* out, uint32_t out_size, const Token& token, const Str& directive )
+  ErrorInvalidDirective ( char* out, uint32_t out_size, const Token& token, const Str& directive )
   {
-    char* directive_str = (char*)alloca( directive.GetLength() + 1 );
-    directive.ToCStr( directive_str );
-
-    return BuildErrorMsg( out, out_size, "\"%s\" is not a valid directive", token, directive_str );
+    char* directive_str = ( char* ) alloca ( directive.GetLength() + 1 );
+    directive.ToCStr ( directive_str );
+    return BuildErrorMsg ( out, out_size, "\"%s\" is not a valid directive", token, directive_str );
   }
 
   bool
-  ErrorInvalidJsonValue( char* out, uint32_t out_size, const Token& token )
+  ErrorInvalidJsonValue ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Default JSON value is not valid", token );
+    return BuildErrorMsg ( out, out_size, "Default JSON value is not valid", token );
   }
 
   bool
-  ErrorUnterminatedNumber( char* out, uint32_t out_size, const Token& token )
+  ErrorUnterminatedNumber ( char* out, uint32_t out_size, const Token& token )
   {
-    return BuildErrorMsg( out, out_size, "Unterminated number constant", token );
+    return BuildErrorMsg ( out, out_size, "Unterminated number constant", token );
   }
 
   bool
-  ErrorThrown( char* out, uint32_t out_size, const char* the_error )
+  ErrorThrown ( char* out, uint32_t out_size, const char* the_error )
   {
-    snprintf( out, out_size, ERROR_HEADER "%s", the_error );
+    snprintf ( out, out_size, ERROR_HEADER "%s", the_error );
     return false;
   }
 };

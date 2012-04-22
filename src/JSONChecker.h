@@ -6,12 +6,12 @@
 
 struct JSONChecker
 {
-    int state;
-    int depth;
-    int top;
-    int stack[ 100 ];
+  int state;
+  int depth;
+  int top;
+  int stack[ 100 ];
 };
 
-void JSONCheckerInit( JSONChecker* jc );
-bool JSONCheckerChar( JSONChecker* jc, int next_char );
-bool JSONCheckerDone( JSONChecker* jc );
+void JSONCheckerInit ( JSONChecker* jc );
+bool JSONCheckerChar ( JSONChecker* jc, int next_char );
+bool JSONCheckerDone ( JSONChecker* jc );

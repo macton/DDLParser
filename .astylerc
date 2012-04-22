@@ -1,0 +1,17 @@
+--style=ansi
+--indent=spaces=2
+--indent-classes
+--indent-switches
+--indent-namespaces
+--indent-col1-comments
+--max-instatement-indent=80
+--break-blocks
+--pad-oper
+--pad-header
+--unpad-paren
+--pad-paren-in
+--pad-paren-out
+--delete-empty-lines
+--add-brackets
+--convert-tabs
+--align-pointer=type

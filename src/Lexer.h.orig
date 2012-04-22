@@ -92,11 +92,11 @@ namespace DDLParser
       // configuration files where __FILE_EXTENSIONS and __TARGETS are defined. Returns true if
       // everything was correctly tokenized or false otherwise. In this case, the error parameter
       // points to the error message.
-      bool Tokenize ( const uint8_t* buffer, size_t size, GrowableArray< Token >& tokens, bool two_us_reserved, char*& error );
+      bool Tokenize(const uint8_t* buffer, size_t size, GrowableArray< Token >& tokens, bool two_us_reserved, char*& error);
 
     private:
       // Gets the next token from the source code.
-      bool           GetNext ( Token& token );
+      bool           GetNext(Token& token);
       // True if the current character in the source code is a space (according to isspace from ctype.h).
       bool           IsSpace() const;
       // Ditto for alphabetic characters.
@@ -130,5 +130,5 @@ namespace DDLParser
       char           m_Error[256];
   };
 
-  const char* GetTokenStr ( TokenID token );
+  const char* GetTokenStr( TokenID token );
 }
