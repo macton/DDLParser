@@ -135,7 +135,7 @@ local function generateStruct( struct )
     JsonWriteScopeObject json( parent_scope, name );
 
     /*!
-    if struct:getBase() then */ok = ok && /*= struct:getBase() */::WriteJsonObject( &json, "/*= struct:getBase():getName() */" );/*! end
+    if struct:getBase() then */ok = ok && /*= struct:getBase() */::WriteJson( &json, "/*= struct:getBase():getName() */" );/*! end
     */
 
     /*!
