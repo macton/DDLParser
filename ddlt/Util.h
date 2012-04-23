@@ -4,7 +4,7 @@
 
 struct lua_State;
 
-void RegisterFunctions( lua_State* L );
+void RegisterFunctions( lua_State* L, const char* exename, size_t exelen );
 
 int  CompareBoxedPointers( lua_State* L );
 void PushDDLType( lua_State* L, uint32_t type );

@@ -9,9 +9,9 @@ local function parseArguments( args )
   while i <= #args do
     local option = args[ i ]
     
-    if option == '-t' then
+    --[[if option == '-t' then
       option = '--template'
-    end
+    end]]
     
     local opt_args = settings[ option ] or {}
     
@@ -35,8 +35,17 @@ local function validateDDL( ddl )
   end
 end
 
-local function runTemplate( template, template_name, ddlc, first_aggregate, template_settings )
-  local code = compileTemplate( template )
+local function runTemplate( template_name, template_path, ddlc, first_aggregate, template_settings )
+  local file, err = io.open( template_path )
+
+  if not file then
+    error( 'Could not open ' .. template_path .. ': ' .. err )
+  end
+
+  local source = file:read( '*a' )
+  file:close()
+
+  local code = compileTemplate( source )
   
   --[[file = io.open( 'template.lua', 'w' )
   file:write( code )
@@ -49,22 +58,102 @@ local function runTemplate( template, template_name, ddlc, first_aggregate, temp
   
   chunk()
   -- Templates must define a global function instead of returning one because
-  -- when the template is compiles it adds extra emit statements after the end
+  -- when the template is compiled it adds extra emit statements after the end
   -- of the file, invalidating the return
   main( ddlc, first_aggregate, template_settings )
 end
 
-local output_file = false
+local output = nil
 
-function setOutputFile( file_name )
-  output_file = io.open( file_name, 'w' )
+function beginOutput()
+  output = {}
 end
 
 function emit( ... )
-  if output_file then
+  if output then
     for _, arg in ipairs( { ... } ) do
-      output_file:write( tostring( arg ) )
+      output[ #output + 1 ] = tostring( arg )
     end
+  end
+end
+
+function endOutput()
+  output = nil
+end
+
+function getOutput()
+  if output then
+    return table.concat( output ):gsub( '\n%s+\n', '\n' )
+  end
+end
+
+function checkSettings( settings, spec )
+  for _, opt in ipairs( spec ) do
+    if opt.short_name then
+      settings[ opt.long_name ]  = settings[ opt.short_name ] or settings[ opt.long_name ]
+      settings[ opt.short_name ] = nil
+    end
+    
+    local setting = settings[ opt.long_name ]
+
+    --[[if opt.mandatory and not setting then
+      error( 'Missing mandatory option ' .. opt.long_name )
+    end]]
+    
+    if setting then
+      if #setting < opt.min or ( opt.max and #setting > opt.max ) then
+        error( 'Wrong number of arguments to option ' .. opt.long_name )
+      end
+    end
+  end
+end
+
+local function findFile( settings, name )
+  local search_paths = settings[ '--search-path' ]
+  local path, file
+
+  if search_paths then
+    for _, search_path in ipairs( search_paths ) do
+      path = search_path .. '/' .. name
+
+      file = io.open( path )
+
+      if file then
+        file:close()
+        return path
+      end
+    end
+  end
+
+  path = getWorkingDir() .. name
+
+  file = io.open( path )
+
+  if file then
+    file:close()
+    return path
+  end
+
+  path = getShareDir()
+
+  if path then
+    path = path .. name
+
+    file = io.open( path )
+
+    if file then
+      file:close()
+      return path
+    end
+  end
+
+  path = getExecutableDir() .. name
+
+  file = io.open( path )
+
+  if file then
+    file:close()
+    return path
   end
 end
 
@@ -82,39 +171,26 @@ local function dumpargs( args, ident )
   end
 end
 
-function checkSettings( settings, spec )
-  for _, opt in ipairs( spec ) do
-    if opt.short_name then
-      settings[ opt.long_name ]  = settings[ opt.short_name ] or settings[ opt.long_name ]
-      settings[ opt.short_name ] = nil
-    end
-    
-    local setting = settings[ opt.long_name ]
-
-    if opt.mandatory and not setting then
-      error( 'Missing mandatory option ' .. opt.long_name )
-    end
-    
-    if setting then
-      if #setting < opt.min or ( opt.max and #setting > opt.max ) then
-        error( 'Wrong number of arguments to option ' .. opt.long_name )
-      end
-    end
-  end
-end
-
 local function trace( event, line )
   local info = debug.getinfo( 2 )
 
-  io.stdout:write( info.source, ':', line, '\n' )
+  io.write( info.source, ':', line, '\n' )
 end
 
-return function( args, ddlc, templates )
+return function( args, ddlc )
   --debug.sethook( trace, 'l' )
 
   settings = parseArguments( args )
   
-  if settings[ '-h' ] or settings[ '--help' ] then
+  checkSettings( settings, {
+    { short_name = '-h', long_name = '--help', min = 0 },
+    { short_name = '-i', long_name = '--input-file', min = 1, max = 1 }, -- mandatory
+    { short_name = '-d', long_name = '--dependent-file', min = 1 },
+    { short_name = '-t', long_name = '--template', min = 1 }, -- mandatory
+    { short_name = '-s', long_name = '--search-path', min = 1 }
+  } )
+  
+  if settings[ '--help' ] then
     io.write(
       'DDLT version 1.0\n\n',
       'Usage: DDLT options..\n',
@@ -123,28 +199,37 @@ return function( args, ddlc, templates )
       '-i --input-file <input file>   Defines the input file\n',
       '-d --dependent-file <file>...  Includes file with necessary additional\n',
       '                               definitions\n',
-      '-t --template <template name > Run the input file through this template\n',
+      '-t --template <template name>  Run the input file through this template\n',
+      '-s --search-path <path>...     Additional search paths to look for templates\n',
       '\n'
     )
     
-    for _, template in ipairs( settings[ '--template' ] or {} ) do
-      local template_name = template --:GetFilePathLeaf():StripFilePathSuffix()
-      local template = templates[ template_name ]
+    for _, template_name in ipairs( settings[ '--template' ] ) do
+      local template_path = findFile( settings, template_name .. '.lt' )
       
-      if template then
-        runTemplate( template, template_name, nil, nil, { [ '--help' ] = {} } )
-        output_file = false
+      if template_path then
+        runTemplate( template_name, template_path, nil, nil, settings )
+      else
+        error( 'Unknown template ' .. template_name )
       end
     end
     
     os.exit( 0 )
   end
-  
-  checkSettings( settings, {
-    { short_name = '-i', long_name = '--input-file', mandatory = true, min = 1, max = 1 },
-    { short_name = '-d', long_name = '--dependent-file', mandatory = false, min = 1 },
-    { short_name = '-t', long_name = '--template', mandatory = true, min = 1 }
-  } )
+
+  if not settings[ '--input-file' ] then
+    error( 'Missing mandatory option --input-file\n' )
+  end
+
+  if not settings[ '--template' ] then
+    error( 'Missing mandatory option --template' )
+  end
+
+  local extra = findFile( settings, 'extra.lua' )
+
+  if extra then
+    dofile( extra )
+  end
   
   local dependent_files = settings[ '--dependent-file' ]
   local first_aggregate = 1
@@ -171,18 +256,17 @@ return function( args, ddlc, templates )
   
   validateDDL( ddlc:getDefinition() )
   
-  for _, template in pairs( settings[ '--template' ] ) do
-    local template_name = template --:GetFilePathLeaf():StripFilePathSuffix()
-    local template = templates[ template_name ]
+  for _, template_name in ipairs( settings[ '--template' ] ) do
+    local template_path = findFile( settings, template_name .. '.lt' )
     
-    if not template then
+    if not template_path then
       error( 'Unknown template ' .. template_name )
     end
     
     io.write( 'Running template ', template_name, '\n' )
     io.flush()
     
-    runTemplate( template, template_name, ddlc, first_aggregate, settings )
+    runTemplate( template_name, template_path, ddlc, first_aggregate, settings )
     output_file = false
   end
 end

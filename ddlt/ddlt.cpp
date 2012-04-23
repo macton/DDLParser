@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <malloc.h>
+#include <string.h>
 
 #include <DDLParser.h>
 
@@ -6,9 +8,6 @@
 #include "CompilerIf.h"
 
 #include "ddlc.h"
-#include "extra.h"
-#include "cpp.h"
-#include "hpp.h"
 
 extern "C"
 {
@@ -92,17 +91,28 @@ static int db_errorfb (lua_State *L) {
 
 static int LuaMain( lua_State* L )
 {
-  // Open the standard libraries and register ddlt functions
-  luaL_openlibs( L );
-  RegisterFunctions( L );
+  // Get the command line arguments
+  Args* args = (Args*)lua_touserdata( L, lua_upvalueindex( 1 ) );
 
-  // Run user supplied code
-  if ( luaL_loadbuffer( L, (const char*)extra, _extra_size, "extra.lua" ) != 0 )
+  // Get the executable directory
+#if 0 && defined( DDLT_TEMPLATE_DIR )
+  int exelen = sizeof( DDLT_TEMPLATE_DIR ) - 1;
+  const char* exedir = DDLT_TEMPLATE_DIR;
+#else
+  const char* dirsep = strrchr( args->argv[ 0 ], '/' );
+
+  if ( dirsep == NULL )
   {
-    return lua_error( L );
+    dirsep = strrchr( args->argv[ 0 ], '\\' );
   }
 
-  lua_call( L, 0, 0 );
+  int exelen = dirsep - args->argv[ 0 ] + 1;
+  const char* exedir = args->argv[ 0 ];
+#endif
+
+  // Open the standard libraries and register ddlt functions
+  luaL_openlibs( L );
+  RegisterFunctions( L, exedir, exelen );
 
   // Push the main function onto the stack
   if ( luaL_loadbuffer( L, (const char*)ddlc, _ddlc_size, "ddlc.lua" ) != 0 )
@@ -113,8 +123,6 @@ static int LuaMain( lua_State* L )
   lua_call( L, 0, 1 );
 
   // Push the arguments array
-  Args* args = (Args*)lua_touserdata( L, lua_upvalueindex( 1 ) );
-
   lua_newtable( L );
   for ( int i = 1; i < args->argc; i++ )
   {
@@ -125,15 +133,8 @@ static int LuaMain( lua_State* L )
   // Push the DDL compiler
   DDLT::Compiler::PushNew( L, args->argv[ 0 ], false, 32 );
 
-  // Push the available templates array
-  lua_newtable( L );
-  lua_pushlstring( L, (const char*)cpp_template, _cpp_template_size );
-  lua_setfield( L, -2, "cpp" );
-  lua_pushlstring( L, (const char*)hpp_template, _hpp_template_size );
-  lua_setfield( L, -2, "hpp" );
-
   // Call main
-  lua_call( L, 3, 0 );
+  lua_call( L, 2, 0 );
 
   return 0;
 }

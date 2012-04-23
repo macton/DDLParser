@@ -222,20 +222,23 @@ function main( ddlc, first_aggregate, settings )
       'CPP template arguments\n',
       '\n',
       '-h --help                      Shows this help page\n',
-      '-o --output-file               Defines the output file\n',
-      '-I --include                   #includes a file in the generated code\n',
+      '-o --output-file <file>        Defines the output file\n',
+      '-I --include <file>...         #includes a file in the generated code\n',
       '\n'
     )
     return
   end
 
   checkSettings( settings, {
-    { short_name = '-o', long_name = '--output-file', mandatory = true, min = 1, max = 1 },
-    { short_name = '-I', long_name = '--include', mandatory = false, min = 1 }
+    { short_name = '-o', long_name = '--output-file', min = 1, max = 1 }, -- mandatory
+    { short_name = '-I', long_name = '--include', min = 1 }
   } )
 
-  local output = settings[ '--output-file' ][ 1 ]
-  setOutputFile( output )
+  if not settings[ '--output-file' ] then
+    error( 'Missing mandatory option --output-file' )
+  end
+
+  beginOutput()
 
   local disclaimer = ddlc:getDisclaimer()
   */
@@ -247,5 +250,21 @@ function main( ddlc, first_aggregate, settings )
   /*! end */
   /*!
   generate( ddlc, first_aggregate, settings )
+
+  local code, err = getOutput():formatCode()
+  endOutput()
+
+  if not code then
+    error( err )
+  end
+
+  local file, err = io.open( settings[ '--output-file' ][ 1 ], 'w' )
+
+  if not file then
+    error( err )
+  end
+
+  file:write( code )
+  file:close()
 end
 */

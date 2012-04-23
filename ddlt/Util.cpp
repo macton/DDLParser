@@ -1,6 +1,15 @@
 #include <ctype.h>
 #include <string.h>
 #include <malloc.h>
+#include <errno.h>
+#include <astyle.h>
+
+#ifdef __WIN__
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+
 
 #include <DDLParser.h>
 
@@ -11,6 +20,10 @@ extern "C"
   #include "lua.h"
   #include "lauxlib.h"
 };
+
+#ifndef PATH_MAX
+#define PATH_MAX 512
+#endif
 
 static int EscapeCPP( lua_State* L )
 {
@@ -70,6 +83,65 @@ static int Crc32( lua_State* L )
   lua_pushstring( L, hex );
 
   return 1;
+}
+
+// AStyle API sucks so we have to define this global
+static const char* s_AStyleError;
+
+#ifdef __WIN__
+#define ASTYLECALL __stdcall
+#else
+#define ASTYLECALL
+#endif
+
+static void ASTYLECALL ASErrorHandler( int errorNumber, char* errorMessage )
+{
+  s_AStyleError = errorMessage;
+}
+
+static char* ASTYLECALL ASMemoryAlloc( unsigned long memoryNeeded )
+{
+  return new( nothrow ) char[ memoryNeeded ];
+}
+
+static int FormatCode( lua_State* L )
+{
+  const char* code = luaL_checkstring( L, 1 );
+  const char* options = luaL_optstring( L, 1,
+    "--style=ansi "
+    "--indent=spaces=2 "
+    "--indent-classes "
+    "--indent-switches "
+    "--indent-namespaces "
+    "--indent-col1-comments "
+    "--max-instatement-indent=80 "
+    "--break-blocks "
+    "--pad-oper "
+    "--pad-header "
+    "--unpad-paren "
+    "--pad-paren-in "
+    "--pad-paren-out "
+    "--delete-empty-lines "
+    "--add-brackets "
+    "--convert-tabs "
+    "--align-pointer=type"
+  );
+
+  char* formatted = AStyleMain( code, options, (fpError)ASErrorHandler, (fpAlloc)ASMemoryAlloc );
+
+  if ( formatted != NULL )
+  {
+    lua_pushstring( L, formatted );
+    lua_pushnil( L );
+  }
+  else
+  {
+    lua_pushnil( L );
+    lua_pushstring( L, s_AStyleError );
+  }
+
+  delete[] formatted;
+  return 2;
 }
 
 static int CompileTemplate( lua_State* L )
@@ -143,7 +215,41 @@ static int CompileTemplate( lua_State* L )
   return 1;
 }
 
-void RegisterFunctions( lua_State* L )
+static int GetExecutableDir( lua_State* L )
+{
+  const char* exedir = lua_tostring( L, lua_upvalueindex( 1 ) );
+
+  lua_pushstring( L, exedir );
+  return 1;
+}
+
+static int GetWorkingDir( lua_State* L )
+{
+  char cwd[ PATH_MAX ];
+  
+  if ( getcwd( cwd, sizeof( cwd ) ) == NULL )
+  {
+    return luaL_error( L, "Error getting the current working directory: %s", strerror( errno ) );
+  }
+
+  lua_pushstring( L, cwd );
+  lua_pushliteral( L, "/" );
+  lua_concat( L, 2 );
+  return 1;
+}
+
+static int GetShareDir( lua_State* L )
+{
+#if defined( DDLT_TEMPLATE_DIR )
+  lua_pushstring( L, DDLT_TEMPLATE_DIR );
+#else
+  lua_pushnil( L );
+#endif
+
+  return 1;
+}
+
+void RegisterFunctions( lua_State* L, const char* exedir, size_t exelen )
 {
   // Most path functions go into the string namespace
   lua_getglobal( L, "string" );
@@ -152,11 +258,23 @@ void RegisterFunctions( lua_State* L )
   lua_setfield( L, -2, "escapeCPP" );
   lua_pushcfunction( L, Crc32 );
   lua_setfield( L, -2, "crc32" );
+  lua_pushcfunction( L, FormatCode );
+  lua_setfield( L, -2, "formatCode" );
 
   lua_pop( L, 1 );
 
   lua_pushcfunction( L, CompileTemplate );
   lua_setglobal( L, "compileTemplate" );
+
+  lua_pushlstring( L, exedir, exelen );
+  lua_pushcclosure( L, GetExecutableDir, 1 );
+  lua_setglobal( L, "getExecutableDir" );
+
+  lua_pushcfunction( L, GetShareDir );
+  lua_setglobal( L, "getShareDir" );
+
+  lua_pushcfunction( L, GetWorkingDir );
+  lua_setglobal( L, "getWorkingDir" );
 }
 
 int CompareBoxedPointers( lua_State* L )

@@ -219,8 +219,7 @@ function main( ddlc, first_aggregate, settings )
     { short_name = '-I', long_name = '--include', mandatory = false, min = 1 }
   } )
 
-  local output = settings[ '--output-file' ][ 1 ]
-  setOutputFile( output )
+  beginOutput()
 
   local disclaimer = ddlc:getDisclaimer()
   */
@@ -232,5 +231,21 @@ function main( ddlc, first_aggregate, settings )
   /*! end */
   /*!
   generate( ddlc, first_aggregate, settings )
+
+  local code, err = getOutput():formatCode()
+  endOutput()
+
+  if not code then
+    error( err )
+  end
+
+  local file, err = io.open( settings[ '--output-file' ][ 1 ], 'w' )
+
+  if not file then
+    error( err )
+  end
+
+  file:write( code )
+  file:close()
 end
 */
