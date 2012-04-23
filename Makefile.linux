@@ -14,34 +14,34 @@ output/debug/libddlparser.a: $(LIBOBJSD)
 	ar cru $@ $+ && ranlib $@
 
 output/debug/AreaManager.o: src/AreaManager.cpp
-	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/AreaManager.cpp
+	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/AreaManager.cpp
 
 output/debug/DDLParser.o: src/DDLParser.cpp
-	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/DDLParser.cpp
+	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/DDLParser.cpp
 
 output/debug/Error.o: src/Error.cpp
-	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Error.cpp
+	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Error.cpp
 
 output/debug/Hash.o: src/Hash.cpp
-	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Hash.cpp
+	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Hash.cpp
 
 output/debug/JSONChecker.o: src/JSONChecker.cpp
-	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/JSONChecker.cpp
+	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/JSONChecker.cpp
 
 output/debug/Lexer.o: src/Lexer.cpp src/Tokens.inc
-	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Lexer.cpp
+	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Lexer.cpp
 
 output/debug/Parser.o: src/Parser.cpp
-	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Parser.cpp
+	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Parser.cpp
 
 output/debug/Str.o: src/Str.cpp
-	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Str.cpp
+	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Str.cpp
 
 output/debug/StringArea.o: src/StringArea.cpp
-	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/StringArea.cpp
+	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/StringArea.cpp
 
 output/debug/Value.o: src/Value.cpp
-	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Value.cpp
+	g++ -O0 -g -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Value.cpp
 
 LIBOBJSR=output/release/AreaManager.o output/release/DDLParser.o output/release/Error.o output/release/Hash.o output/release/JSONChecker.o output/release/Lexer.o output/release/Parser.o output/release/Str.o output/release/StringArea.o output/release/Value.o
 
@@ -49,34 +49,34 @@ output/release/libddlparser.a: $(LIBOBJSR)
 	ar cru $@ $+ && ranlib $@
 
 output/release/AreaManager.o: src/AreaManager.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/AreaManager.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/AreaManager.cpp
 
 output/release/DDLParser.o: src/DDLParser.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/DDLParser.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/DDLParser.cpp
 
 output/release/Error.o: src/Error.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Error.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Error.cpp
 
 output/release/Hash.o: src/Hash.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Hash.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Hash.cpp
 
 output/release/JSONChecker.o: src/JSONChecker.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/JSONChecker.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/JSONChecker.cpp
 
 output/release/Lexer.o: src/Lexer.cpp src/Tokens.inc
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Lexer.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Lexer.cpp
 
 output/release/Parser.o: src/Parser.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Parser.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Parser.cpp
 
 output/release/Str.o: src/Str.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Str.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Str.cpp
 
 output/release/StringArea.o: src/StringArea.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/StringArea.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/StringArea.cpp
 
 output/release/Value.o: src/Value.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c src/Value.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Value.cpp
 
 src/Tokens.inc: src/Tokens.gperf
 	cd src && gperf -c -C -l -L C++ -t -7 -m 100 -I --output-file=Tokens.inc Tokens.gperf && cd ..
@@ -90,7 +90,7 @@ src/Tokens.inc: src/Tokens.gperf
 ##          ##    ######## ##     ##    ##    #########  ######
 
 util/text2c.o: util/text2c.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c util/text2c.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c util/text2c.cpp
 
 util/text2c: util/text2c.o
 	g++  -o $@ $+
@@ -109,31 +109,31 @@ ddlt/ddlt: $(DDLTOBJS) output/release/libddlparser.a
 	g++  -o $@ $+ -llua -lastyle
 
 ddlt/Allocator.o: ddlt/Allocator.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c ddlt/Allocator.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c ddlt/Allocator.cpp
 
 ddlt/BitfieldIf.o: ddlt/BitfieldIf.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c ddlt/BitfieldIf.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c ddlt/BitfieldIf.cpp
 
 ddlt/CompilerIf.o: ddlt/CompilerIf.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c ddlt/CompilerIf.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c ddlt/CompilerIf.cpp
 
 ddlt/DefinitionIf.o: ddlt/DefinitionIf.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c ddlt/DefinitionIf.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c ddlt/DefinitionIf.cpp
 
 ddlt/SelectIf.o: ddlt/SelectIf.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c ddlt/SelectIf.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c ddlt/SelectIf.cpp
 
 ddlt/StructIf.o: ddlt/StructIf.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c ddlt/StructIf.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c ddlt/StructIf.cpp
 
 ddlt/TagIf.o: ddlt/TagIf.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c ddlt/TagIf.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c ddlt/TagIf.cpp
 
 ddlt/Util.o: ddlt/Util.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c ddlt/Util.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c ddlt/Util.cpp
 
 ddlt/ddlt.o: ddlt/ddlt.cpp ddlt/ddlc.h
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c ddlt/ddlt.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c ddlt/ddlt.cpp
 
 ddlt/ddlc.h: ddlt/ddlc.lua util/text2c
 	util/text2c ddlt/ddlc.lua ddlc > ddlt/ddlc.h
@@ -153,10 +153,10 @@ test/test_ddl.cpp: ddlt/ddlt test/test.ddl
 	ddlt/ddlt -i test/test.ddl -t cpp -I test_ddl.h -o test/test_ddl.cpp
 
 test/test_ddl.o: test/test_ddl.cpp test/test_ddl.h
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c test/test_ddl.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c test/test_ddl.cpp
 
 test/test.o: test/test.cpp test/test_ddl.h
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c test/test.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c test/test.cpp
 
 test/test: test/test.o test/test_ddl.o
 	g++  -o $@ $+
@@ -170,10 +170,10 @@ test/test_nacl_ddl.cpp: ddlt/ddlt test/test.ddl
 	ddlt/ddlt -i test/test.ddl -t nacl_cpp -I test_nacl_ddl.h -o test/test_nacl_ddl.cpp
 
 test/test_nacl_ddl.o: test/test_nacl_ddl.cpp test/test_nacl_ddl.h
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c test/test_nacl_ddl.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c test/test_nacl_ddl.cpp
 
 test/test_nacl.o: test/test_nacl.cpp test/test_nacl_ddl.h test/test_nacl_ddl.cpp
-	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c test/test_nacl.cpp
+	g++ -O2 -Iinclude  -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c test/test_nacl.cpp
 
 test/test_nacl: test/test_nacl.o test/test_nacl_ddl.o
 	g++  -o $@ $+
