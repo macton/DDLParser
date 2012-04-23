@@ -89,9 +89,9 @@ elseif platform == 'linux' then
   config.OBJEXT  = '.o'
   config.LIBNAME = 'lib%1.a'
 
-  config.CC       = 'g++ -O2 -Iinclude ${INCDIRS} -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c %1'
+  config.CC       = 'g++ -O2 -Iinclude ${INCDIRS} -DDDLT_TEMPLATE_DIR="\\"/usr/local/share/ddlt/\\"" -Wall -Wno-format -o $@ -c %1'
   config.CCLIB    = config.CC
-  config.CCLIBD   = 'g++ -O0 -g -Iinclude ${INCDIRS} -DDDLT_TEMPLATE_DIR="/usr/local/share/ddlt/" -Wall -Wno-format -o $@ -c %1'
+  config.CCLIBD   = 'g++ -O0 -g -Iinclude ${INCDIRS} -DDDLT_TEMPLATE_DIR="\\"/usr/local/share/ddlt/\\"" -Wall -Wno-format -o $@ -c %1'
   config.LIB      = 'ar cru $@ ${ALLDEPS} && ranlib $@'
   config.LINK     = 'g++ ${LIBDIRS} -o $@ ${ALLDEPS}'
   config.GPERF    = 'gperf -c -C -l -L C++ -t -7 -m 100 -I'
