@@ -78,6 +78,7 @@ if platform == 'mingw' then
   config.LINK     = 'g++ -Ldeps -o $@ ${ALLDEPS}'
   config.GPERF    = 'gperf -c -C -l -L C++ -t -7 -m 100 -I'
   config.RM       = 'rm -f'
+  config.LUA      = 'util/lua'
   config.INSTLIB  = 'cp output/release/libddlparser.a /usr/local/lib && cp include/DDLParser.h /usr/local/include'
   config.INSTDDLT = 'mkdir /usr/local/share/ddlt && cp util/*.lt util/extra.lua /usr/local/share/ddlt && cp ddlt/ddlt /usr/local/bin'
 
@@ -96,6 +97,7 @@ elseif platform == 'linux' then
   config.LINK     = 'g++ ${LIBDIRS} -o $@ ${ALLDEPS}'
   config.GPERF    = 'gperf -c -C -l -L C++ -t -7 -m 100 -I'
   config.RM       = 'rm -f'
+  config.LUA      = 'lua'
   config.INSTLIB  = 'cp output/release/libddlparser.a /usr/local/lib && cp include/DDLParser.h /usr/local/include'
   config.INSTDDLT = 'mkdir /usr/local/share/ddlt && cp util/*.lt util/extra.lua /usr/local/share/ddlt && cp ddlt/ddlt /usr/local/bin'
 
@@ -114,6 +116,7 @@ elseif platform == 'msvc-x64' then
   config.LINK   = 'link /nologo /subsystem:console /out:$@ ${ALLDEPS}'
   config.GPERF  = '..\\util\\gperf -c -C -l -L C++ -t -7 -m 100 -I'
   config.RM     = 'util\\rmfiles'
+  config.LUA    = 'util\\lua'
 
   config.DEPLIBS = 'deps\\lua-x64.lib deps\\AStyleLib-x64.lib'
   config.DIRSEP  = '\\'
@@ -130,6 +133,7 @@ elseif platform == 'msvc-x86' then
   config.LINK   = 'link /nologo /subsystem:console /out:$@ ${ALLDEPS}'
   config.GPERF  = '..\\util\\gperf -c -C -l -L C++ -t -7 -m 100 -I'
   config.RM     = 'util\\rmfiles'
+  config.LUA    = 'util\\lua'
 
   config.DEPLIBS = 'deps\\lua-x86.lib deps\\AStyleLib-x86.lib'
   config.DIRSEP  = '\\'
@@ -217,7 +221,7 @@ local function sub( key )
 end
 
 local mkfile = [[
-all: output~debug~${LIB:ddlparser} output~release~${LIB:ddlparser} ddlt~ddlt${EXEEXT} test~test${EXEEXT} test~test_nacl${EXEEXT}
+all: output~debug~${LIB:ddlparser} output~release~${LIB:ddlparser} ddlt~ddlt${EXEEXT} test~test${EXEEXT} test~test_nacl${EXEEXT} README README.html README.md
 
 ##       ##       #### ########  ########     ###    ########  ##    ##
 ####     ##        ##  ##     ## ##     ##   ## ##   ##     ##  ##  ##
@@ -398,6 +402,23 @@ test~test_nacl${EXEEXT}: test~test_nacl${OBJEXT} test~test_nacl_ddl${OBJEXT}
   ${LINK}
   echo "Running test_nacl..."
   test~test_nacl
+
+##       ########   #######   ######  ##     ## ##     ## ######## ##    ## ########    ###    ######## ####  #######  ##    ##
+####     ##     ## ##     ## ##    ## ##     ## ###   ### ##       ###   ##    ##      ## ##      ##     ##  ##     ## ###   ##
+######   ##     ## ##     ## ##       ##     ## #### #### ##       ####  ##    ##     ##   ##     ##     ##  ##     ## ####  ##
+######## ##     ## ##     ## ##       ##     ## ## ### ## ######   ## ## ##    ##    ##     ##    ##     ##  ##     ## ## ## ##
+######   ##     ## ##     ## ##       ##     ## ##     ## ##       ##  ####    ##    #########    ##     ##  ##     ## ##  ####
+####     ##     ## ##     ## ##    ## ##     ## ##     ## ##       ##   ###    ##    ##     ##    ##     ##  ##     ## ##   ###
+##       ########   #######   ######   #######  ##     ## ######## ##    ##    ##    ##     ##    ##    ####  #######  ##    ##
+
+README: util~createdoc.lua
+  ${LUA} util~createdoc.lua txt > $@
+
+README.html: util~createdoc.lua
+  ${LUA} util~createdoc.lua html > $@
+
+README.md: util~createdoc.lua
+  ${LUA} util~createdoc.lua md > $@
 
 ##       #### ##    ##  ######  ########    ###    ##       ##
 ####      ##  ###   ## ##    ##    ##      ## ##   ##       ##

@@ -1,4 +1,4 @@
-all: output/debug/libddlparser.a output/release/libddlparser.a ddlt/ddlt.exe test/test.exe test/test_nacl.exe
+all: output/debug/libddlparser.a output/release/libddlparser.a ddlt/ddlt.exe test/test.exe test/test_nacl.exe README README.html README.md
 
 ##       ##       #### ########  ########     ###    ########  ##    ##
 ####     ##        ##  ##     ## ##     ##   ## ##   ##     ##  ##  ##
@@ -179,6 +179,23 @@ test/test_nacl.exe: test/test_nacl.o test/test_nacl_ddl.o
 	g++ -Ldeps -o $@ $+
 	echo "Running test_nacl..."
 	test/test_nacl
+
+##       ########   #######   ######  ##     ## ##     ## ######## ##    ## ########    ###    ######## ####  #######  ##    ##
+####     ##     ## ##     ## ##    ## ##     ## ###   ### ##       ###   ##    ##      ## ##      ##     ##  ##     ## ###   ##
+######   ##     ## ##     ## ##       ##     ## #### #### ##       ####  ##    ##     ##   ##     ##     ##  ##     ## ####  ##
+######## ##     ## ##     ## ##       ##     ## ## ### ## ######   ## ## ##    ##    ##     ##    ##     ##  ##     ## ## ## ##
+######   ##     ## ##     ## ##       ##     ## ##     ## ##       ##  ####    ##    #########    ##     ##  ##     ## ##  ####
+####     ##     ## ##     ## ##    ## ##     ## ##     ## ##       ##   ###    ##    ##     ##    ##     ##  ##     ## ##   ###
+##       ########   #######   ######   #######  ##     ## ######## ##    ##    ##    ##     ##    ##    ####  #######  ##    ##
+
+README: util/createdoc.lua
+	util/lua util/createdoc.lua txt > $@
+
+README.html: util/createdoc.lua
+	util/lua util/createdoc.lua html > $@
+
+README.md: util/createdoc.lua
+	util/lua util/createdoc.lua md > $@
 
 ##       #### ##    ##  ######  ########    ###    ##       ##
 ####      ##  ###   ## ##    ##    ##      ## ##   ##       ##
