@@ -204,16 +204,18 @@ return function( args, ddlc )
       '\n'
     )
     
-    for _, template_name in ipairs( settings[ '--template' ] ) do
-      local template_path = findFile( settings, template_name .. '.lt' )
-      
-      if template_path then
+    if settings[ '--template' ] then
+      for _, template_name in ipairs( settings[ '--template' ] ) do
+        local template_path = findFile( settings, template_name .. '.lt' )
+        
+        if template_path then
         runTemplate( template_name, template_path, nil, nil, settings )
-      else
+        else
         error( 'Unknown template ' .. template_name )
+        end
       end
     end
-    
+  
     os.exit( 0 )
   end
 
