@@ -147,15 +147,15 @@ ddlt/ddlc.h: ddlt/ddlc.lua util/text2c.exe
 ##          ##    ########  ######     ##
 
 test/test_ddl.h: ddlt/ddlt.exe test/test.ddl
-	ddlt/ddlt -i test/test.ddl -t hpp -o test/test_ddl.h
+	ddlt/ddlt -i test/test.ddl -t hpp -o test/test_ddl.h --search-path test
 
 test/test_ddl.cpp: ddlt/ddlt.exe test/test.ddl
-	ddlt/ddlt -i test/test.ddl -t cpp -I test_ddl.h -o test/test_ddl.cpp
+	ddlt/ddlt -i test/test.ddl -t cpp -I test_ddl.h -o test/test_ddl.cpp --search-path test
 
 test/test_ddl.o: test/test_ddl.cpp test/test_ddl.h
 	g++ -O2 -Iinclude -Ideps -D__WIN__ -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c test/test_ddl.cpp
 
-test/test.o: test/test.cpp test/test_ddl.h
+test/test.o: test/test.cpp test/test_ddl.h 
 	g++ -O2 -Iinclude -Ideps -D__WIN__ -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c test/test.cpp
 
 test/test.exe: test/test.o test/test_ddl.o
@@ -164,10 +164,10 @@ test/test.exe: test/test.o test/test_ddl.o
 	test/test
 
 test/test_nacl_ddl.h: ddlt/ddlt.exe test/test.ddl
-	ddlt/ddlt -i test/test.ddl -t nacl_hpp -o test/test_nacl_ddl.h
+	ddlt/ddlt -i test/test.ddl -t nacl_hpp -o test/test_nacl_ddl.h --search-path test
 
 test/test_nacl_ddl.cpp: ddlt/ddlt.exe test/test.ddl
-	ddlt/ddlt -i test/test.ddl -t nacl_cpp -I test_nacl_ddl.h -o test/test_nacl_ddl.cpp
+	ddlt/ddlt -i test/test.ddl -t nacl_cpp -I test_nacl_ddl.h -o test/test_nacl_ddl.cpp --search-path test
 
 test/test_nacl_ddl.o: test/test_nacl_ddl.cpp test/test_nacl_ddl.h
 	g++ -O2 -Iinclude -Ideps -D__WIN__ -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c test/test_nacl_ddl.cpp
@@ -206,8 +206,8 @@ README.md: util/createdoc.lua
 ##       #### ##    ##  ######     ##    ##     ## ######## ########
 
 install:
-	cp output/release/libddlparser.a /usr/local/lib && cp include/DDLParser.h /usr/local/include
-	mkdir /usr/local/share/ddlt && cp util/*.lt util/extra.lua /usr/local/share/ddlt && cp ddlt/ddlt /usr/local/bin
+	@echo "To install the DDLParser library, copy libddlparser.a from output/debug or output/release to /usr/local/lib and include/DDLParser.h to /use/local/include. Alternatively, add the include folder and either output/release or output/debug folders to your compiler paths."
+	@echo "To install ddlt, copy the ddlt/ddlt executable to /usr/local/bin. Alternatively, add the ddlt folder to your PATH."
 
 ##        ######  ##       ########    ###    ##    ##
 ####     ##    ## ##       ##         ## ##   ###   ##
@@ -221,7 +221,7 @@ clean:
 	rm -f src/Tokens.inc
 	rm -f output/debug/libddlparser.a $(LIBOBJSD) output/debug/ddlparser.pdb
 	rm -f output/release/libddlparser.a $(LIBOBJSR) output/release/ddlparser.pdb
-	rm -f ddlt/ddlt.exe $(DDLTOBJS) ddlt/ddlc.h
+	rm -f ddlt/ddlt.exe $(DDLTOBJS) ddlt/ddlc.h ddlt/ddlt.exp ddlt/ddlt.lib
 	rm -f etc/text2c.exe etc/text2c.o
 	rm -f test/test_ddl.h test/test_ddl.cpp test/test_ddl.o test/test.o test/test.exe
 	rm -f test/test_nacl_ddl.h test/test_nacl_ddl.cpp test/test_nacl_ddl.o test/test_nacl.o test/test_nacl.exe

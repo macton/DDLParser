@@ -79,8 +79,6 @@ if platform == 'mingw' then
   config.GPERF    = 'gperf -c -C -l -L C++ -t -7 -m 100 -I'
   config.RM       = 'rm -f'
   config.LUA      = 'util/lua'
-  config.INSTLIB  = 'cp output/release/libddlparser.a /usr/local/lib && cp include/DDLParser.h /usr/local/include'
-  config.INSTDDLT = 'mkdir /usr/local/share/ddlt && cp util/*.lt util/extra.lua /usr/local/share/ddlt && cp ddlt/ddlt /usr/local/bin'
 
   config.DEPLIBS = '-llua -lastyle'
   config.DIRSEP  = '/'
@@ -98,8 +96,6 @@ elseif platform == 'linux' then
   config.GPERF    = 'gperf -c -C -l -L C++ -t -7 -m 100 -I'
   config.RM       = 'rm -f'
   config.LUA      = 'lua'
-  config.INSTLIB  = 'cp output/release/libddlparser.a /usr/local/lib && cp include/DDLParser.h /usr/local/include'
-  config.INSTDDLT = 'mkdir /usr/local/share/ddlt && cp util/*.lt util/extra.lua /usr/local/share/ddlt && cp ddlt/ddlt /usr/local/bin'
 
   config.DEPLIBS = '-llua -lastyle'
   config.DIRSEP  = '/'
@@ -212,9 +208,9 @@ local function sub( key )
   elseif key:sub( 1, 4 ) == 'LIB:' then
     return config.LIBNAME:gsub( '%%1', key:sub( 5, -1 ) )
   elseif key == 'INSTLIB' then
-    return config.INSTLIB or 'echo "Add the include and either output/release or output/debug folders to your compiler paths."'
+    return config.INSTLIB or '@echo "To install the DDLParser library, copy libddlparser.a from output/debug or output/release to /usr/local/lib and include/DDLParser.h to /use/local/include. Alternatively, add the include folder and either output/release or output/debug folders to your compiler paths."'
   elseif key == 'INSTDDLT' then
-    return config.INSTDDLT or 'echo "Add the ddlt folder to your PATH or copy ddlt/ddlt.exe, ddlt/*.lt and ddlt/extra.lua to a folder in your path."'
+    return config.INSTDDLT or '@echo "To install ddlt, copy the ddlt/ddlt executable to /usr/local/bin. Alternatively, add the ddlt folder to your PATH."'
   end
 
   return key
@@ -370,15 +366,15 @@ ddlt~ddlc.h: ddlt~ddlc.lua util~text2c${EXEEXT}
 ##          ##    ########  ######     ##
 
 test~test_ddl.h: ddlt~ddlt${EXEEXT} test~test.ddl
-  ddlt~ddlt -i test~test.ddl -t hpp -o test~test_ddl.h
+  ddlt~ddlt -i test~test.ddl -t hpp -o test~test_ddl.h --search-path test
 
 test~test_ddl.cpp: ddlt~ddlt${EXEEXT} test~test.ddl
-  ddlt~ddlt -i test~test.ddl -t cpp -I test_ddl.h -o test~test_ddl.cpp
+  ddlt~ddlt -i test~test.ddl -t cpp -I test_ddl.h -o test~test_ddl.cpp --search-path test
 
 test~test_ddl${OBJEXT}: test~test_ddl.cpp test~test_ddl.h
   ${CC:test~test_ddl.cpp}
 
-test~test${OBJEXT}: ${DEPS:test~test.cpp} test~test_ddl.h
+test~test${OBJEXT}: ${DEPS:test~test.cpp} test~test_ddl.h 
   ${CC:test~test.cpp}
 
 test~test${EXEEXT}: test~test${OBJEXT} test~test_ddl${OBJEXT}
@@ -387,10 +383,10 @@ test~test${EXEEXT}: test~test${OBJEXT} test~test_ddl${OBJEXT}
   test~test
 
 test~test_nacl_ddl.h: ddlt~ddlt${EXEEXT} test~test.ddl
-  ddlt~ddlt -i test~test.ddl -t nacl_hpp -o test~test_nacl_ddl.h
+  ddlt~ddlt -i test~test.ddl -t nacl_hpp -o test~test_nacl_ddl.h --search-path test
 
 test~test_nacl_ddl.cpp: ddlt~ddlt${EXEEXT} test~test.ddl
-  ddlt~ddlt -i test~test.ddl -t nacl_cpp -I test_nacl_ddl.h -o test~test_nacl_ddl.cpp
+  ddlt~ddlt -i test~test.ddl -t nacl_cpp -I test_nacl_ddl.h -o test~test_nacl_ddl.cpp --search-path test
 
 test~test_nacl_ddl${OBJEXT}: test~test_nacl_ddl.cpp test/test_nacl_ddl.h
   ${CC:test~test_nacl_ddl.cpp}
@@ -444,7 +440,7 @@ clean:
   ${RM} src~Tokens.inc
   ${RM} output~debug~${LIB:ddlparser} $(LIBOBJSD) output~debug~ddlparser.pdb
   ${RM} output~release~${LIB:ddlparser} $(LIBOBJSR) output~release~ddlparser.pdb
-  ${RM} ddlt~ddlt${EXEEXT} $(DDLTOBJS) ddlt~ddlc.h
+  ${RM} ddlt~ddlt${EXEEXT} $(DDLTOBJS) ddlt~ddlc.h ddlt~ddlt.exp ddlt~ddlt.lib
   ${RM} etc~text2c${EXEEXT} etc~text2c${OBJEXT}
   ${RM} test~test_ddl.h test~test_ddl.cpp test~test_ddl${OBJEXT} test~test${OBJEXT} test~test${EXEEXT}
   ${RM} test~test_nacl_ddl.h test~test_nacl_ddl.cpp test~test_nacl_ddl${OBJEXT} test~test_nacl${OBJEXT} test~test_nacl${EXEEXT}

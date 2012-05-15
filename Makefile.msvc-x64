@@ -147,15 +147,15 @@ ddlt\ddlc.h: ddlt\ddlc.lua util\text2c.exe
 ##          ##    ########  ######     ##
 
 test\test_ddl.h: ddlt\ddlt.exe test\test.ddl
-	ddlt\ddlt -i test\test.ddl -t hpp -o test\test_ddl.h
+	ddlt\ddlt -i test\test.ddl -t hpp -o test\test_ddl.h --search-path test
 
 test\test_ddl.cpp: ddlt\ddlt.exe test\test.ddl
-	ddlt\ddlt -i test\test.ddl -t cpp -I test_ddl.h -o test\test_ddl.cpp
+	ddlt\ddlt -i test\test.ddl -t cpp -I test_ddl.h -o test\test_ddl.cpp --search-path test
 
 test\test_ddl.obj: test\test_ddl.cpp test\test_ddl.h
 	cl /Iinclude /Ideps /nologo /D__WIN__ /Dsnprintf=_snprintf /Dgetcwd=_getcwd /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c test\test_ddl.cpp
 
-test\test.obj: test\test.cpp test\test_ddl.h
+test\test.obj: test\test.cpp test\test_ddl.h 
 	cl /Iinclude /Ideps /nologo /D__WIN__ /Dsnprintf=_snprintf /Dgetcwd=_getcwd /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c test\test.cpp
 
 test\test.exe: test\test.obj test\test_ddl.obj
@@ -164,10 +164,10 @@ test\test.exe: test\test.obj test\test_ddl.obj
 	test\test
 
 test\test_nacl_ddl.h: ddlt\ddlt.exe test\test.ddl
-	ddlt\ddlt -i test\test.ddl -t nacl_hpp -o test\test_nacl_ddl.h
+	ddlt\ddlt -i test\test.ddl -t nacl_hpp -o test\test_nacl_ddl.h --search-path test
 
 test\test_nacl_ddl.cpp: ddlt\ddlt.exe test\test.ddl
-	ddlt\ddlt -i test\test.ddl -t nacl_cpp -I test_nacl_ddl.h -o test\test_nacl_ddl.cpp
+	ddlt\ddlt -i test\test.ddl -t nacl_cpp -I test_nacl_ddl.h -o test\test_nacl_ddl.cpp --search-path test
 
 test\test_nacl_ddl.obj: test\test_nacl_ddl.cpp test/test_nacl_ddl.h
 	cl /Iinclude /Ideps /nologo /D__WIN__ /Dsnprintf=_snprintf /Dgetcwd=_getcwd /D_USE_MATH_DEFINES /DNDEBUG /Ox /GF /EHsc /MD /GS- /Gy /fp:precise /Zc:forScope /Gd /Fo$@ /c test\test_nacl_ddl.cpp
@@ -206,8 +206,8 @@ README.md: util\createdoc.lua
 ##       #### ##    ##  ######     ##    ##     ## ######## ########
 
 install:
-	echo "Add the include and either output/release or output/debug folders to your compiler paths."
-	echo "Add the ddlt folder to your PATH or copy ddlt/ddlt.exe, ddlt/*.lt and ddlt/extra.lua to a folder in your path."
+	@echo "To install the DDLParser library, copy libddlparser.a from output/debug or output/release to /usr/local/lib and include/DDLParser.h to /use/local/include. Alternatively, add the include folder and either output/release or output/debug folders to your compiler paths."
+	@echo "To install ddlt, copy the ddlt/ddlt executable to /usr/local/bin. Alternatively, add the ddlt folder to your PATH."
 
 ##        ######  ##       ########    ###    ##    ##
 ####     ##    ## ##       ##         ## ##   ###   ##
@@ -221,7 +221,7 @@ clean:
 	util\rmfiles src\Tokens.inc
 	util\rmfiles output\debug\ddlparser.lib $(LIBOBJSD) output\debug\ddlparser.pdb
 	util\rmfiles output\release\ddlparser.lib $(LIBOBJSR) output\release\ddlparser.pdb
-	util\rmfiles ddlt\ddlt.exe $(DDLTOBJS) ddlt\ddlc.h
+	util\rmfiles ddlt\ddlt.exe $(DDLTOBJS) ddlt\ddlc.h ddlt\ddlt.exp ddlt\ddlt.lib
 	util\rmfiles etc\text2c.exe etc\text2c.obj
 	util\rmfiles test\test_ddl.h test\test_ddl.cpp test\test_ddl.obj test\test.obj test\test.exe
 	util\rmfiles test\test_nacl_ddl.h test\test_nacl_ddl.cpp test\test_nacl_ddl.obj test\test_nacl.obj test\test_nacl.exe
