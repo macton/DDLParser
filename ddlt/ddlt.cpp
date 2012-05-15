@@ -94,25 +94,9 @@ static int LuaMain( lua_State* L )
   // Get the command line arguments
   Args* args = (Args*)lua_touserdata( L, lua_upvalueindex( 1 ) );
 
-  // Get the executable directory
-#if 0 && defined( DDLT_TEMPLATE_DIR )
-  int exelen = sizeof( DDLT_TEMPLATE_DIR ) - 1;
-  const char* exedir = DDLT_TEMPLATE_DIR;
-#else
-  const char* dirsep = strrchr( args->argv[ 0 ], '/' );
-
-  if ( dirsep == NULL )
-  {
-    dirsep = strrchr( args->argv[ 0 ], '\\' );
-  }
-
-  int exelen = dirsep - args->argv[ 0 ] + 1;
-  const char* exedir = args->argv[ 0 ];
-#endif
-
   // Open the standard libraries and register ddlt functions
   luaL_openlibs( L );
-  RegisterFunctions( L, exedir, exelen );
+  RegisterFunctions( L );
 
   // Push the main function onto the stack
   if ( luaL_loadbuffer( L, (const char*)ddlc, _ddlc_size, "ddlc.lua" ) != 0 )

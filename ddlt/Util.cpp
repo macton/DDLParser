@@ -215,16 +215,12 @@ static int CompileTemplate( lua_State* L )
   return 1;
 }
 
-static int GetExecutableDir( lua_State* L )
+static int GetSearchPaths( lua_State* L )
 {
-  const char* exedir = lua_tostring( L, lua_upvalueindex( 1 ) );
-
-  lua_pushstring( L, exedir );
-  return 1;
-}
-
-static int GetWorkingDir( lua_State* L )
-{
+  lua_newtable( L );
+  int index = 1;
+  
+  // Get the current working directory
   char cwd[ PATH_MAX ];
   
   if ( getcwd( cwd, sizeof( cwd ) ) == NULL )
@@ -235,21 +231,19 @@ static int GetWorkingDir( lua_State* L )
   lua_pushstring( L, cwd );
   lua_pushliteral( L, "/" );
   lua_concat( L, 2 );
-  return 1;
-}
+  
+  lua_rawseti( L, -2, index++ );
 
-static int GetShareDir( lua_State* L )
-{
 #if defined( DDLT_TEMPLATE_DIR )
+  // Get the template folder (/usr/local/share/ddlt on MinGW and Linux)
   lua_pushstring( L, DDLT_TEMPLATE_DIR );
-#else
-  lua_pushnil( L );
+  lua_rawseti( L, -2, index++ );
 #endif
 
   return 1;
 }
 
-void RegisterFunctions( lua_State* L, const char* exedir, size_t exelen )
+void RegisterFunctions( lua_State* L )
 {
   // Most path functions go into the string namespace
   lua_getglobal( L, "string" );
@@ -266,15 +260,8 @@ void RegisterFunctions( lua_State* L, const char* exedir, size_t exelen )
   lua_pushcfunction( L, CompileTemplate );
   lua_setglobal( L, "compileTemplate" );
 
-  lua_pushlstring( L, exedir, exelen );
-  lua_pushcclosure( L, GetExecutableDir, 1 );
-  lua_setglobal( L, "getExecutableDir" );
-
-  lua_pushcfunction( L, GetShareDir );
-  lua_setglobal( L, "getShareDir" );
-
-  lua_pushcfunction( L, GetWorkingDir );
-  lua_setglobal( L, "getWorkingDir" );
+  lua_pushcfunction( L, GetSearchPaths );
+  lua_setglobal( L, "getSearchPaths" );
 }
 
 int CompareBoxedPointers( lua_State* L )

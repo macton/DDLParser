@@ -109,37 +109,10 @@ function checkSettings( settings, spec )
 end
 
 local function findFile( settings, name )
-  local search_paths = settings[ '--search-path' ]
-  local path, file
+  for _, search_path in ipairs( settings[ '--search-path' ] or {} ) do
+    local path = search_path .. '/' .. name
 
-  if search_paths then
-    for _, search_path in ipairs( search_paths ) do
-      path = search_path .. '/' .. name
-
-      file = io.open( path )
-
-      if file then
-        file:close()
-        return path
-      end
-    end
-  end
-
-  path = getWorkingDir() .. name
-
-  file = io.open( path )
-
-  if file then
-    file:close()
-    return path
-  end
-
-  path = getShareDir()
-
-  if path then
-    path = path .. name
-
-    file = io.open( path )
+    local file = io.open( path )
 
     if file then
       file:close()
@@ -147,13 +120,15 @@ local function findFile( settings, name )
     end
   end
 
-  path = getExecutableDir() .. name
+  for _, search_path in ipairs( getSearchPaths() ) do
+    local path = search_path .. '/' .. name
 
-  file = io.open( path )
+    local file = io.open( path )
 
-  if file then
-    file:close()
-    return path
+    if file then
+      file:close()
+      return path
+    end
   end
 end
 
