@@ -350,6 +350,12 @@ void PushDDLArrayType( lua_State* L, uint32_t type )
   case DDLParser::kDynamic:
     lua_pushliteral( L, "dynamic" );
     break;
+  case DDLParser::kHashmap:
+    lua_pushliteral( L, "hashmap" );
+    break;
+  default:
+    lua_pushnil( L );
+    break;
   }
 }
 

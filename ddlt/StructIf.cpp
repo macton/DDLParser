@@ -472,6 +472,19 @@ int DDLT::StructField::getValue( lua_State* L )
   return 1;
 }
 
+int DDLT::StructField::getKeyType( lua_State* L )
+{
+  StructField* self = Check( L, 1 );
+
+  if ( self->m_Field->GetValueInfo()->GetArrayType() == DDLParser::kHashmap )
+  {
+    PushDDLType( L, self->m_Field->GetValueInfo()->GetKeyType() );
+    return 1;
+  }
+  
+  return 0;
+}
+
 int DDLT::StructField::getOwner( lua_State* L )
 {
   StructField* self = Check( L, 1 );
@@ -527,6 +540,9 @@ int DDLT::StructField::l__index( lua_State* L )
     return 1;
   case 0xefd20555U: // getValue
     lua_pushcfunction( L, getValue );
+    return 1;
+  case 0x9d6b6bc8U: // getKeyType
+    lua_pushcfunction( L, getKeyType );
     return 1;
   case 0x3dc5bb1dU: // getOwner
     lua_pushcfunction( L, getOwner );

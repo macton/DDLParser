@@ -87,6 +87,7 @@ namespace DDLT
     static int getArrayType( lua_State* L );
     static int getArrayCount( lua_State* L );
     static int getValue( lua_State* L );
+    static int getKeyType( lua_State* L );
     static int getOwner( lua_State* L );
     static int isInherited( lua_State* L );
     static int l__index( lua_State* L );

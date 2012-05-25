@@ -14,13 +14,13 @@ local function generateSelect( select )
     enum
     {
       /*! for _, item in select:items() do */
-        /*= item:getName() */ = /*= ( '0x%08xUL' ):format( item:getNameHash() ) */, // /*= item:getDescription() or '' */
+        k/*= capitalize( item:getName() ) */ = /*= ( '0x%08xUL' ):format( item:getNameHash() ) */, // /*= item:getDescription() or '' */
       /*! end */
     };
 
     inline bool Init()
     {
-      m_Value = /*= select:getDefaultItem():getName() */;
+      m_Value = k/*= capitalize( select:getDefaultItem():getName() ) */;
       return true;
     }
 
@@ -53,13 +53,13 @@ local function generateBitfield( bitfield )
     enum
     {
       /*!for _, flag in bitfield:flags() do */
-        /*= flag:getName() */ = /*= getFlagValue( flag ) */, // /*= flag:getDescription() or '' */
+        k/*= capitalize( flag:getName() ) */ = /*= getFlagValue( flag ) */, // /*= flag:getDescription() or '' */
       /*! end */
     };
 
     inline bool Init()
     {
-      m_Value = /*= bitfield:getDefaultFlag():getName() */;
+      m_Value = k/*= capitalize( bitfield:getDefaultFlag():getName() ) */;
       return true;
     }
 
@@ -104,11 +104,11 @@ local function generateStruct( struct )
       if field:getArrayType() == 'scalar' then
         if field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
           */
-          char m_/*= field:getName() */[ 256 ]; // /*= field:getDescription() or '' */
+          char m_/*= capitalize( field:getName() ) */[ 256 ]; // /*= field:getDescription() or '' */
           /*!
         else
           */
-          /*= getCppType( field ) */ m_/*= field:getName() */; // /*= field:getDescription() or '' */
+          /*= getCppType( field ) */ m_/*= capitalize( field:getName() ) */; // /*= field:getDescription() or '' */
           /*!
         end
       end
@@ -122,36 +122,38 @@ local function generateStruct( struct )
 
     /*!
     for _, field in struct:ownFields() do
+      local name = capitalize( field:getName() )
+      
       if field:getArrayType() == 'scalar' then
         if field:getDeclaredType() then
           */
-          inline /*= field:getDeclaredType():getName() */* Get/*= field:getName() */()
+          inline /*= field:getDeclaredType():getName() */* Get/*= name */()
           {
-            return &m_/*= field:getName() */;
+            return &m_/*= name */;
           }
           /*!
         elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
           */
-          inline const char* Get/*= field:getName() */() const
+          inline const char* Get/*= name */() const
           {
-            return m_/*= field:getName() */;
+            return m_/*= name */;
           }
 
-          inline void Set/*= field:getName() */( const char* value )
+          inline void Set/*= name */( const char* value )
           {
-            strncpy( m_/*= field:getName() */, value, sizeof( m_/*= field:getName() */ ) );
+            strncpy( m_/*= name */, value, sizeof( m_/*= name */ ) );
           }
           /*!
         else
           */
-          inline /*= getCppType( field ) */ Get/*= field:getName() */() const
+          inline /*= getCppType( field ) */ Get/*= name */() const
           {
-            return m_/*= field:getName() */;
+            return m_/*= name */;
           }
 
-          inline void Set/*= field:getName() */( /*= getCppType( field ) */ value )
+          inline void Set/*= name */( /*= getCppType( field ) */ value )
           {
-            m_/*= field:getName() */ = value;
+            m_/*= name */ = value;
           }
           /*!
         end

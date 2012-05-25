@@ -10,7 +10,7 @@ local function generateSelect( select )
     switch ( value ) // Check for a valid value.
     {
       /*! for _, item in select:items() do */
-        case /*= item:getName() */:
+        case k/*= capitalize( item:getName() ) */:
       /*! end */
       m_Value = value;
       break;
@@ -22,7 +22,7 @@ local function generateSelect( select )
     switch ( value ) // Check for a valid value.
     {
       /*! for _, item in select:items() do */
-      case /*= item:getName() */:
+      case k/*= capitalize( item:getName() ) */:
         return "/*= item:getName() */";
         break;
       /*! end */
@@ -69,29 +69,31 @@ local function generateStruct( struct )
     if struct:getBase() then */ok = ok && /*= struct:getBase() */::Init();/*! end
 
     for _, field in struct:ownFields() do
+      local name = capitalize( field:getName() )
+      
       if field:getArrayType() == 'scalar' then
         if field:getDeclaredType() then
           */
-          ok = ok && m_/*= field:getName() */.Init();
+          ok = ok && m_/*= name */.Init();
           /*!
           if field:getValue() then
             if field:getType() == 'struct' then
               dumpStructValue( { valueinfo = field } )
             elseif field:getType() == 'select' then
               */
-              m_/*= field:getName() */.Set( /*= field:getDeclaredType():getName() */::/*= field:getValue():getName() */ ); // /*= field:getValue():getName() */
+              m_/*= name */.Set( /*= field:getDeclaredType():getName() */::k/*= capitalize( field:getValue():getName() ) */ ); // /*= field:getValue():getName() */
               /*!
             else
               if type( field:getValue() ) ~= 'table' then
                 */
-                m_/*= field:getName() */.Set( /*= field:getDeclaredType():getName() */::/*= field:getValue():getName() */ ); // /*= field:getValue():getName() */
+                m_/*= name */.Set( /*= field:getDeclaredType():getName() */::k/*= capitalize( field:getValue():getName() ) */ ); // /*= field:getValue():getName() */
                 /*!
               else
-                */m_/*= field:getName() */.Set( /*!
+                */m_/*= name */.Set( /*!
                 for index, flag in ipairs( field:getValue() ) do
                   if index ~=1 then emit( '|' ) end
 
-                  emit( field:getDeclaredType():getName(), '::', flag:getName() )
+                  emit( field:getDeclaredType():getName(), '::k', capitalize( flag:getName() ) )
                 end
                 */ );/*!
               end
@@ -101,17 +103,17 @@ local function generateStruct( struct )
           if field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
             if #getFieldValue( field ) > 2 then
               */
-              strncpy( m_/*= field:getName() */, /*= getFieldValue( field ) */, sizeof( m_/*= field:getName() */ ) );
-              m_/*= field:getName() */[ sizeof( m_/*= field:getName() */ ) - 1 ] = 0;
+              strncpy( m_/*= name */, /*= getFieldValue( field ) */, sizeof( m_/*= name */ ) );
+              m_/*= name */[ sizeof( m_/*= name */ ) - 1 ] = 0;
               /*!
             else
               */
-              m_/*= field:getName() */[ 0 ] = 0;
+              m_/*= name */[ 0 ] = 0;
               /*!
             end
           else
             */
-            m_/*= field:getName() */ = /*= getFieldValue( field ) */;
+            m_/*= name */ = /*= getFieldValue( field ) */;
             /*!
           end
         end
@@ -140,44 +142,47 @@ local function generateStruct( struct )
 
     /*!
     for _, field in struct:ownFields() do
-      if field:getDeclaredType() then
-        */
-        ok = ok && m_/*= field:getName() */.WriteJson( &json, "/*= field:getName() */" );
-        /*!
-      elseif field:getType() == 'boolean' then
-        */
-        json.WriteBool( m_/*= field:getName() */, "/*= field:getName() */" );
-        /*!
-      elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
-        */
-        json.WriteString( m_/*= field:getName() */, "/*= field:getName() */" );
-        /*!
-      elseif field:getType() == 'int8' or field:getType() == 'int16' or field:getType() == 'int32' or field:getType() == 'int64' then
-        */
-        json.WriteInt( m_/*= field:getName() */, "/*= field:getName() */" );
-        /*!
-      elseif field:getType() == 'uint8' or field:getType() == 'uint16' or field:getType() == 'uint32' or field:getType() == 'uint64' then
-        */
-        json.WriteUInt( m_/*= field:getName() */, "/*= field:getName() */" );
-        /*!
-      elseif field:getType() == 'uint8' or field:getType() == 'uint16' or field:getType() == 'uint32' or field:getType() == 'uint64' then
-        */
-        json.WriteUInt( m_/*= field:getName() */, "/*= field:getName() */" );
-        /*!
-      elseif field:getType() == 'tuid' then
-        */
-        json.WriteUInt( m_/*= field:getName() */, "/*= field:getName() */" );
-        /*!
-      elseif field:getType() == 'float32' or field:getType() == 'float64' then
-        */
-        json.WriteFloat( m_/*= field:getName() */, "/*= field:getName() */" );
-        /*!
-      else
-        */
-        json.WriteString( "m_/*= field:getName() */", "unsupported" ); // /*= field:getType() */
-        /*!
+      local name = capitalize( field:getName() )
+      
+      if field:getArrayType() == 'scalar' then
+        if field:getDeclaredType() then
+          */
+          ok = ok && m_/*= name */.WriteJson( &json, "/*= name */" );
+          /*!
+        elseif field:getType() == 'boolean' then
+          */
+          json.WriteBool( m_/*= name */, "/*= name */" );
+          /*!
+        elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+          */
+          json.WriteString( m_/*= name */, "/*= name */" );
+          /*!
+        elseif field:getType() == 'int8' or field:getType() == 'int16' or field:getType() == 'int32' or field:getType() == 'int64' then
+          */
+          json.WriteInt( m_/*= name */, "/*= name */" );
+          /*!
+        elseif field:getType() == 'uint8' or field:getType() == 'uint16' or field:getType() == 'uint32' or field:getType() == 'uint64' then
+          */
+          json.WriteUInt( m_/*= name */, "/*= name */" );
+          /*!
+        elseif field:getType() == 'uint8' or field:getType() == 'uint16' or field:getType() == 'uint32' or field:getType() == 'uint64' then
+          */
+          json.WriteUInt( m_/*= name */, "/*= name */" );
+          /*!
+        elseif field:getType() == 'tuid' then
+          */
+          json.WriteUInt( m_/*= name */, "/*= name */" );
+          /*!
+        elseif field:getType() == 'float32' or field:getType() == 'float64' then
+          */
+          json.WriteFloat( m_/*= name */, "/*= name */" );
+          /*!
+        else
+          */
+          json.WriteString( "m_/*= name */", "unsupported" ); // /*= field:getType() */
+          /*!
+        end
       end
-    
     end
     */
     return ok;

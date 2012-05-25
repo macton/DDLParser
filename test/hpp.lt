@@ -1,4 +1,12 @@
 /*!
+--  ######  ######## ##       ########  ######  ########
+-- ##    ## ##       ##       ##       ##    ##    ##
+-- ##       ##       ##       ##       ##          ##
+--  ######  ######   ##       ######   ##          ##
+--       ## ##       ##       ##       ##          ##
+-- ##    ## ##       ##       ##       ##    ##    ##
+--  ######  ######## ######## ########  ######     ##
+
 local function generateSelect( select )
 */
   ///*= ( '=' ):rep( 80 ) */
@@ -9,34 +17,58 @@ local function generateSelect( select )
   {
   private:
     uint32_t m_Value;
-
+    
   public:
-    enum
+    /*! for _, item in select:items() do */
+      static const uint32_t k/*= capitalize( item:getName() ) */ = /*= ( '0x%08xUL' ):format( item:getNameHash() ) */; // /*= item:getDescription() or '' */
+    /*! end */
+    
+    inline /*= select:getName() */()
     {
-      /*! for _, item in select:items() do */
-        /*= item:getName() */ = /*= ( '0x%08xUL' ):format( item:getNameHash() ) */, // /*= item:getDescription() or '' */
-      /*! end */
-    };
-
+      #ifndef NDEBUG
+        m_Value = 0;
+      #endif
+    }
+    
+    inline ~/*= select:getName() */()
+    {
+      assert( m_Value == 0 );
+    }
+    
     inline bool Init()
     {
-      m_Value = /*= select:getDefaultItem():getName() */;
+      m_Value = k/*= capitalize( select:getDefaultItem():getName() ) */;
       return true;
     }
 
-    inline void Destroy() {}
+    inline void Destroy()
+    {
+      #ifndef NDEBUG
+        m_Value = 0;
+      #endif
+    }
+
+    bool IsValid( uint32_t value );
 
     inline uint32_t Get() const
     {
       return m_Value;
     }
 
-    void Set( uint32_t value );
+    bool Set( uint32_t value );
     bool Load( FILE* fp );
     bool Save( FILE* fp );
   };
 /*!
 end
+
+-- ########  #### ######## ######## #### ######## ##       ########
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ########   ##     ##    ######    ##  ######   ##       ##     ##
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ########  ####    ##    ##       #### ######## ######## ########
 
 local function generateBitfield( bitfield )
 */
@@ -48,42 +80,47 @@ local function generateBitfield( bitfield )
   {
   private:
     uint32_t m_Value;
-
+    
   public:
-    enum
-    {
-      /*!for _, flag in bitfield:flags() do */
-        /*= flag:getName() */ = /*= getFlagValue( flag ) */, // /*= flag:getDescription() or '' */
-      /*! end */
-    };
+    /*! for _, flag in bitfield:flags() do */
+      static const uint32_t k/*= capitalize( flag:getName() ) */ = /*= getFlagValue( flag ) */; // /*= flag:getDescription() or '' */
+    /*! end */
 
+    inline /*= bitfield:getName() */()
+    {
+      #ifndef NDEBUG
+        m_Value = 0;
+      #endif
+    }
+    
+    inline ~/*= bitfield:getName() */()
+    {
+      assert( m_Value == 0 );
+    }
+    
     inline bool Init()
     {
-      m_Value = /*= bitfield:getDefaultFlag():getName() */;
+      m_Value = k/*= capitalize( bitfield:getDefaultFlag():getName() ) */;
       return true;
     }
 
-    inline void Destroy() {}
+    inline void Destroy()
+    {
+      #ifndef NDEBUG
+        m_Value = 0;
+      #endif
+    }
+
+    bool IsValid( uint32_t value );
 
     inline uint32_t Get() const
     {
       return m_Value;
     }
 
-    inline void Set( uint32_t value )
-    {
-      m_Value = value;
-    }
-
-    inline void Add( uint32_t value )
-    {
-      m_Value |= value;
-    }
-
-    inline void Remove( uint32_t value )
-    {
-      m_Value &= ~value;
-    }
+    bool Set( uint32_t value );
+    bool Add( uint32_t value );
+    bool Remove( uint32_t value );
 
     bool Load( FILE* fp );
     bool Save( FILE* fp );
@@ -91,8 +128,357 @@ local function generateBitfield( bitfield )
 /*!
 end
 
+--  ######   ######     ###    ##          ###    ########             ###     ######   ######  ########  ######   ######   #######  ########   ######
+-- ##    ## ##    ##   ## ##   ##         ## ##   ##     ##           ## ##   ##    ## ##    ## ##       ##    ## ##    ## ##     ## ##     ## ##    ##
+-- ##       ##        ##   ##  ##        ##   ##  ##     ##          ##   ##  ##       ##       ##       ##       ##       ##     ## ##     ## ##
+--  ######  ##       ##     ## ##       ##     ## ########          ##     ## ##       ##       ######    ######   ######  ##     ## ########   ######
+--       ## ##       ######### ##       ######### ##   ##           ######### ##       ##       ##             ##       ## ##     ## ##   ##         ##
+-- ##    ## ##    ## ##     ## ##       ##     ## ##    ##          ##     ## ##    ## ##    ## ##       ##    ## ##    ## ##     ## ##    ##  ##    ##
+--  ######   ######  ##     ## ######## ##     ## ##     ## ####### ##     ##  ######   ######  ########  ######   ######   #######  ##     ##  ######
+
+ local function generateScalarAccessors( field )
+  local name = capitalize( field:getName() )
+  local ftype = getCppType( field )
+  
+  if field:getDeclaredType()  then
+    */
+    inline const /*= ftype */& Get/*= name */() const
+    {
+      return m_/*= name */;
+    }
+    
+    inline /*= ftype */& Get/*= name */()
+    {
+      return m_/*= name */;
+    }
+    /*!
+  elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+    */
+    inline const /*= ftype */& Get/*= name */() const
+    {
+      return m_/*= name */;
+    }
+    
+    inline void Set/*= name */( const /*= ftype */& value )
+    {
+      m_/*= name */ = value;
+    }
+    /*!
+  else
+    */
+    inline /*= ftype */ Get/*= name */() const
+    {
+      return m_/*= name */;
+    }
+    
+    inline void Set/*= name */( /*= ftype */ value )
+    {
+      m_/*= name */ = value;
+    }
+    /*!
+  end
+end
+
+-- ######## #### ##     ## ######## ########             ###     ######   ######  ########  ######   ######   #######  ########   ######
+-- ##        ##   ##   ##  ##       ##     ##           ## ##   ##    ## ##    ## ##       ##    ## ##    ## ##     ## ##     ## ##    ##
+-- ##        ##    ## ##   ##       ##     ##          ##   ##  ##       ##       ##       ##       ##       ##     ## ##     ## ##
+-- ######    ##     ###    ######   ##     ##         ##     ## ##       ##       ######    ######   ######  ##     ## ########   ######
+-- ##        ##    ## ##   ##       ##     ##         ######### ##       ##       ##             ##       ## ##     ## ##   ##         ##
+-- ##        ##   ##   ##  ##       ##     ##         ##     ## ##    ## ##    ## ##       ##    ## ##    ## ##     ## ##    ##  ##    ##
+-- ##       #### ##     ## ######## ########  ####### ##     ##  ######   ######  ########  ######   ######   #######  ##     ##  ######
+
+local function generateFixedAccessors( field )
+  local name = capitalize( field:getName() )
+  local ftype = getCppType( field )
+  
+  */
+  inline size_t Get/*= name */Count() const
+  {
+    return /*= field:getArrayCount() */;
+  }
+  /*!
+  
+  if field:getDeclaredType() then
+    */
+    inline const /*= ftype */& Get/*= name */( size_t index ) const
+    {
+      assert( index >= 0 && index < /*= field:getArrayCount() */ );
+      return m_/*= name */[ index ];
+    }
+
+    inline /*= ftype */& Get/*= name */( size_t index )
+    {
+      assert( index >= 0 && index < /*= field:getArrayCount() */ );
+      return m_/*= name */[ index ];
+    }
+    /*!
+  elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+    */
+    inline const /*= ftype */& Get/*= name */Element( size_t index ) const
+    {
+      assert( index >= 0 && index < /*= field:getArrayCount() */ );
+      return m_/*= name */[ index ];
+    }
+    
+    inline void Set/*= name */( size_t index, const /*= ftype */& value )
+    {
+      assert( index >= 0 && index < m_/*= name */.size() );
+      m_/*= name */[ index ] = value;
+    }
+    /*!
+  else
+    */
+    inline /*= ftype */ Get/*= name */( size_t index ) const
+    {
+      assert( index >= 0 && index < /*= field:getArrayCount() */ );
+      return m_/*= name */[ index ];
+    }
+    
+    inline void Set/*= name */( size_t index, /*= ftype */ value )
+    {
+      assert( index >= 0 && index < /*= field:getArrayCount() */ );
+      m_/*= name */[ index ] = value;
+    }
+    /*!
+  end
+end
+
+-- ########  ##    ## ##    ##    ###    ##     ## ####  ######             ###     ######   ######  ########  ######   ######   #######  ########   ######
+-- ##     ##  ##  ##  ###   ##   ## ##   ###   ###  ##  ##    ##           ## ##   ##    ## ##    ## ##       ##    ## ##    ## ##     ## ##     ## ##    ##
+-- ##     ##   ####   ####  ##  ##   ##  #### ####  ##  ##                ##   ##  ##       ##       ##       ##       ##       ##     ## ##     ## ##
+-- ##     ##    ##    ## ## ## ##     ## ## ### ##  ##  ##               ##     ## ##       ##       ######    ######   ######  ##     ## ########   ######
+-- ##     ##    ##    ##  #### ######### ##     ##  ##  ##               ######### ##       ##       ##             ##       ## ##     ## ##   ##         ##
+-- ##     ##    ##    ##   ### ##     ## ##     ##  ##  ##    ##         ##     ## ##    ## ##    ## ##       ##    ## ##    ## ##     ## ##    ##  ##    ##
+-- ########     ##    ##    ## ##     ## ##     ## ####  ######  ####### ##     ##  ######   ######  ########  ######   ######   #######  ##     ##  ######
+
+local function generateDynamicAccessors( field )
+  local name = capitalize( field:getName() )
+  local ftype = getCppType( field )
+  
+  */
+  inline size_t Get/*= name */Count() const
+  {
+    return m_/*= name */.size();
+  }
+  
+  inline void Clear/*= name */()
+  {
+    m_/*= name */.clear();
+  }
+  
+  inline void Remove/*= name */( size_t index )
+  {
+    assert( index >= 0 && index < m_/*= name */.size() );
+    m_/*= name */.erase( m_/*= name */.begin() + index );
+  }
+  /*!
+  
+  if field:getDeclaredType() then
+    */
+    inline const /*= ftype */& Get/*= name */( size_t index ) const
+    {
+      assert( index >= 0 && index < m_/*= name */.size() );
+      return m_/*= name */[ index ];
+    }
+    
+    inline /*= ftype */& Get/*= name */( size_t index )
+    {
+      assert( index >= 0 && index < m_/*= name */.size() );
+      return m_/*= name */[ index ];
+    }
+    
+    inline size_t Append/*= name */( const /*= ftype */& value )
+    {
+      m_/*= name */.push_back( value );
+      return m_/*= name */.size() - 1;
+    }
+    
+    inline void Insert/*= name */( size_t index, const /*= ftype */& value )
+    {
+      m_/*= name */.insert( m_/*= name */.begin() + index, value );
+    }
+    /*!
+  elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+    */
+    inline const /*= ftype */& Get/*= name */( size_t index ) const
+    {
+      assert( index >= 0 && index < m_/*= name */.size() );
+      return m_/*= name */[ index ];
+    }
+    
+    inline void Set/*= name */( size_t index, const /*= ftype */& value )
+    {
+      assert( index >= 0 && index < m_/*= name */.size() );
+      m_/*= name */ = value;
+    }
+    
+    inline size_t Append/*= name */( const /*= ftype */& value )
+    {
+      m_/*= name */.push_back( value );
+      return m_/*= name */.size() - 1;
+    }
+    
+    inline void Insert/*= name */( size_t index, const /*= ftype */& value )
+    {
+      m_/*= name */insert( m_/*= name */.begin() + index, value );
+    }
+    /*!
+  else
+    */
+    inline /*= ftype */ Get/*= name */( size_t index ) const
+    {
+      assert( index >= 0 && index < m_/*= name */.size() );
+      return m_/*= name */[ index ];
+    }
+    
+    inline void Set/*= name */( size_t index, /*= ftype */ value ) const
+    {
+      assert( index >= 0 && index < m_/*= name */.size() );
+      m_/*= name */[ index ] = value;
+    }
+    
+    inline size_t Append/*= name */( /*= ftype */ value )
+    {
+      m_/*= name */.push_back( value );
+      return m_/*= name */.size() - 1;
+    }
+    
+    inline void Insert/*= name */( size_t index, /*= ftype */ value )
+    {
+      m_/*= name */.insert( m_/*= name */.begin() + index, value );
+    }
+    /*!
+  end
+end
+
+-- ##     ##    ###     ######  ##     ## ##     ##    ###    ########             ###     ######   ######  ########  ######   ######   #######  ########   ######
+-- ##     ##   ## ##   ##    ## ##     ## ###   ###   ## ##   ##     ##           ## ##   ##    ## ##    ## ##       ##    ## ##    ## ##     ## ##     ## ##    ##
+-- ##     ##  ##   ##  ##       ##     ## #### ####  ##   ##  ##     ##          ##   ##  ##       ##       ##       ##       ##       ##     ## ##     ## ##
+-- ######### ##     ##  ######  ######### ## ### ## ##     ## ########          ##     ## ##       ##       ######    ######   ######  ##     ## ########   ######
+-- ##     ## #########       ## ##     ## ##     ## ######### ##                ######### ##       ##       ##             ##       ## ##     ## ##   ##         ##
+-- ##     ## ##     ## ##    ## ##     ## ##     ## ##     ## ##                ##     ## ##    ## ##    ## ##       ##    ## ##    ## ##     ## ##    ##  ##    ##
+-- ##     ## ##     ##  ######  ##     ## ##     ## ##     ## ##        ####### ##     ##  ######   ######  ########  ######   ######   #######  ##     ##  ######
+
+local function generateHashmapAccessors( field )
+  local name = capitalize( field:getName() )
+  local ftype = getCppType( field )
+  local ktype = getCppType( field:getKeyType() )
+  local hparams = getCppType( field:getKeyType() ) .. ', ' .. ftype
+  
+  if field:getKeyType() == 'string' or field:getKeyType() == 'file' or field:getKeyType() == 'json' then
+    ktype = 'const std::string&'
+  end
+  
+  */
+  inline size_t Get/*= name */Count() const
+  {
+    return m_/*= name */.size();
+  }
+  
+  inline void Clear/*= name */()
+  {
+    m_/*= name */.clear();
+  }
+  
+  inline bool Remove/*= name */( /*= ktype */ key )
+  {
+    return m_/*= name */.erase( key ) != 0;
+  }
+  
+  inline bool Exists/*= name */( /*= ktype */ key ) const
+  {
+    return m_/*= name */.count( key ) != 0;
+  }
+  /*!
+  
+  if field:getDeclaredType()  then
+    */
+    inline const /*= ftype */& Get/*= name */( /*= ktype */ key ) const
+    {
+      std::map< /*= hparams */ >::const_iterator it = m_/*= name */.find( key );
+      assert( it != m_/*= name */.end() );
+      return *it->second;
+    }
+    
+    inline /*= ftype */& Get/*= name */( /*= ktype */ key )
+    {
+      std::map< /*= hparams */ >::const_iterator it = m_/*= name */.find( key );
+      assert( it != m_/*= name */.end() );
+      return *it->second;
+    }
+    
+    inline bool Insert/*= name */( /*= ktype */ key, const /*= ftype */& value )
+    {
+      std::pair< std::map< /*= hparams */ >::iterator, bool > result = m_/*= name */.insert(
+        std::pair< /*= hparams */ >( key, value )
+      );
+      
+      return result.second;
+    }
+    /*!
+  elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+    */
+    inline const /*= ftype */& Get/*= name */( /*= ktype */ key ) const
+    {
+      std::map< /*= hparams */ >::const_iterator it = m_/*= name */.find( key );
+      assert( it != m_/*= name */.end() );
+      return it->second;
+    }
+    
+    inline void Set/*= name */( /*= ktype */ key, const /*= ftype */& value )
+    {
+      std::map< /*= hparams */ >::iterator it = m_/*= name */.find( key );
+      assert( it != m_/*= name */.end() );
+      it->second = value;
+    }
+    
+    inline bool Insert/*= name */( /*= ktype */ key, const /*= ftype */& value )
+    {
+      std::pair< std::map< /*= hparams */ >::iterator, bool > result = m_/*= name */.insert(
+        std::pair< /*= hparams */ >( key, value )
+      );
+      
+      return result.second;
+    }
+    /*!
+  else
+    */
+    inline /*= ftype */ Get/*= name */( /*= ktype */ key ) const
+    {
+      std::map< /*= hparams */ >::const_iterator it = m_/*= name */.find( key );
+      assert( it != m_/*= name */.end() );
+      return it->second;
+    }
+    
+    inline void Set/*= name */( /*= ktype */ key, /*= ftype */ value )
+    {
+      std::map< /*= hparams */ >::iterator it = m_/*= name */.find( key );
+      assert( it != m_/*= name */.end() );
+      it->second = value;
+    }
+    
+    inline bool Insert/*= name */( /*= ktype */ key, /*= ftype */ value )
+    {
+      std::pair< std::map< /*= hparams */ >::iterator, bool > result = m_/*= name */.insert(
+        std::pair< /*= hparams */ >( key, value )
+      );
+      
+      return result.second;
+    }
+    /*!
+  end
+end
+
+--  ######  ######## ########  ##     ##  ######  ########
+-- ##    ##    ##    ##     ## ##     ## ##    ##    ##
+-- ##          ##    ##     ## ##     ## ##          ##
+--  ######     ##    ########  ##     ## ##          ##
+--       ##    ##    ##   ##   ##     ## ##          ##
+-- ##    ##    ##    ##    ##  ##     ## ##    ##    ##
+--  ######     ##    ##     ##  #######   ######     ##
+
 local function generateStruct( struct )
-*/
+  */
   ///*= ( '=' ):rep( 80 ) */
   // Struct /*= struct:getName() */
   ///*= ( '=' ):rep( 80 ) */
@@ -102,58 +488,62 @@ local function generateStruct( struct )
   private:
     /*!
     for _, field in struct:ownFields() do
+      local name = capitalize( field:getName() )
+      local ftype = getCppType( field )
+      
       if field:getArrayType() == 'scalar' then
-        if field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
-          */
-          char m_/*= field:getName() */[ 256 ]; // /*= field:getDescription() or '' */
-          /*!
-        else
-          */
-          /*= getCppType( field ) */ m_/*= field:getName() */; // /*= field:getDescription() or '' */
-          /*!
-        end
+        */
+        /*= ftype */ m_/*= name */; // /*= field:getDescription() or '' */
+        /*!
+      elseif field:getArrayType() == 'fixed' then
+        */
+        /*= ftype */ m_/*= name */[ /*= field:getArrayCount() */ ]; // /*= field:getDescription() or '' */
+        /*!
+      elseif field:getArrayType() == 'dynamic' then
+        */
+        std::vector< /*= ftype */ > m_/*= name */; // /*= field:getDescription() or '' */
+        /*!
+      elseif field:getArrayType() == 'hashmap' then
+        */
+        std::map< /*= getCppType( field:getKeyType() ) .. ', ' .. ftype */ > m_/*= name */; // /*= field:getDescription() or '' */
+        /*!
+      else
+        */
+        // Array type "/*= field:getArrayType() */" not supported
+        /*!
       end
     end
     */
 
   public:
+    inline /*= struct:getName() */() {}
+
+    #ifndef NDEBUG
+    ~/*= struct:getName() */();
+    #else
+    inline ~/*= struct:getName() */() {}
+    #endif
+    
     bool Init();
+    void Destroy();
 
     /*!
     for _, field in struct:ownFields() do
+      local name = capitalize( field:getName() )
+      local ftype = getCppType( field )
+      
       if field:getArrayType() == 'scalar' then
-        if field:getDeclaredType() then
-          */
-          inline /*= field:getDeclaredType():getName() */* Get/*= field:getName() */()
-          {
-            return &m_/*= field:getName() */;
-          }
-          /*!
-        elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
-          */
-          inline const char* Get/*= field:getName() */() const
-          {
-            return m_/*= field:getName() */;
-          }
-
-          inline void Set/*= field:getName() */( const char* value )
-          {
-            strncpy( m_/*= field:getName() */, value, sizeof( m_/*= field:getName() */ ) );
-          }
-          /*!
-        else
-          */
-          inline /*= getCppType( field ) */ Get/*= field:getName() */() const
-          {
-            return m_/*= field:getName() */;
-          }
-
-          inline void Set/*= field:getName() */( /*= getCppType( field ) */ value )
-          {
-            m_/*= field:getName() */ = value;
-          }
-          /*!
-        end
+        generateScalarAccessors( field )
+      elseif field:getArrayType() == 'fixed' then
+        generateFixedAccessors( field )
+      elseif field:getArrayType() == 'dynamic' then
+        generateDynamicAccessors( field )
+      elseif field:getArrayType() == 'hashmap' then
+        generateHashmapAccessors( field )
+      else
+        */
+        // Array type "/*= field:getArrayType() */" not supported
+        /*!
       end
     end
     */
@@ -161,8 +551,16 @@ local function generateStruct( struct )
     bool Load( FILE* fp );
     bool Save( FILE* fp );
   };
-/*!
+  /*!
 end
+
+--  ######   ######## ##    ## ######## ########     ###    ######## ########
+-- ##    ##  ##       ###   ## ##       ##     ##   ## ##      ##    ##
+-- ##        ##       ####  ## ##       ##     ##  ##   ##     ##    ##
+-- ##   #### ######   ## ## ## ######   ########  ##     ##    ##    ######
+-- ##    ##  ##       ##  #### ##       ##   ##   #########    ##    ##
+-- ##    ##  ##       ##   ### ##       ##    ##  ##     ##    ##    ##
+--  ######   ######## ##    ## ######## ##     ## ##     ##    ##    ########
 
 local function generate( ddlc, first_aggregate, settings )
   local ddl = ddlc:getDefinition()
@@ -179,6 +577,14 @@ local function generate( ddlc, first_aggregate, settings )
     end
   end
 end
+
+-- ##     ##    ###    #### ##    ##
+-- ###   ###   ## ##    ##  ###   ##
+-- #### ####  ##   ##   ##  ####  ##
+-- ## ### ## ##     ##  ##  ## ## ##
+-- ##     ## #########  ##  ##  ####
+-- ##     ## ##     ##  ##  ##   ###
+-- ##     ## ##     ## #### ##    ##
 
 function main( ddlc, first_aggregate, settings )
   if settings[ '--help' ] then
@@ -209,7 +615,10 @@ function main( ddlc, first_aggregate, settings )
   ///*= ( '=' ):rep( #disclaimer + 1 ) */
   #include <stdio.h>
   #include <stdint.h>
-  #include <string.h>
+  #include <assert.h>
+  #include <string>
+  #include <vector>
+  #include <map>
   /*!
 
   generate( ddlc, first_aggregate, settings )

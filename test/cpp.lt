@@ -5,16 +5,28 @@ local function generateSelect( select )
   // Select /*= select:getName() */
   ///*= ( '=' ):rep( 80 ) */
 
-  void /*= select:getName() */::Set( uint32_t value )
+  bool /*= select:getName() */::IsValid( uint32_t value )
   {
     switch ( value ) // Check for a valid value.
     {
       /*! for _, item in select:items() do */
-        case /*= item:getName() */:
+        case k/*= capitalize( item:getName() ) */:
       /*! end */
-      m_Value = value;
-      break;
+      return true;
     }
+    
+    return false;
+  }
+
+  bool /*= select:getName() */::Set( uint32_t value )
+  {
+    if ( IsValid( value ) )
+    {
+      m_Value = value;
+      return true;
+    }
+    
+    return false;
   }
 
   bool /*= select:getName() */::Load( FILE* fp )
@@ -22,7 +34,7 @@ local function generateSelect( select )
     Init(); // Set to default value in case fread fails or the value is invalid.
 
     uint32_t value;
-    if ( fread( &value, 1, 4, fp ) == 4 )
+    if ( fread( &value, 1, sizeof( m_Value ), fp ) == sizeof( m_Value ) )
     {
       Set( value );
       return true; // Load was successful, but value may not be set!
@@ -33,7 +45,7 @@ local function generateSelect( select )
 
   bool /*= select:getName() */::Save( FILE* fp )
   {
-    return fwrite( &m_Value, 1, 4, fp ) == 4;
+    return fwrite( &m_Value, 1, sizeof( m_Value ), fp ) == sizeof( m_Value );
   }
   /*!
 end
@@ -43,15 +55,69 @@ local function generateBitfield( bitfield )
   ///*= ( '=' ):rep( 80 ) */
   // Bitfield /*= bitfield:getName() */
   ///*= ( '=' ):rep( 80 ) */
+  
+  bool /*= bitfield:getName() */::IsValid( uint32_t value )
+  {
+    static const uint32_t all_flags =
+    /*!
+    local first = true
+    for _, flag in bitfield:flags() do
+      local value = flag:getValue()
+      
+      if type( value ) ~= 'table' and value ~= 0 then
+        if not first then
+          */ | /*!
+        end
+        first = false
+        */ k/*= capitalize( flag:getName() ) */ /*!
+      end
+    end
+    */ ;
+    
+    return ( value & all_flags ) == value;
+  }
+
+  bool /*= bitfield:getName() */::Set( uint32_t value )
+  {
+    if ( IsValid( value ) )
+    {
+      m_Value = value;
+      return true;
+    }
+    
+    return false;
+  }
+
+  bool /*= bitfield:getName() */::Add( uint32_t value )
+  {
+    if ( IsValid( value ) )
+    {
+      m_Value |= value;
+      return true;
+    }
+    
+    return false;
+  }
+
+  bool /*= bitfield:getName() */::Remove( uint32_t value )
+  {
+    if ( IsValid( value ) )
+    {
+      m_Value &= ~value;
+      return true;
+    }
+    
+    return false;
+  }
 
   bool /*= bitfield:getName() */::Load( FILE* fp )
   {
-    return fread( &m_Value, 1, 4, fp ) == 4;
+    return fread( &m_Value, 1, sizeof( m_Value ), fp ) == sizeof( m_Value );
   }
 
   bool /*= bitfield:getName() */::Save( FILE* fp )
   {
-    return fwrite( &m_Value, 1, 4, fp ) == 4;
+    return fwrite( &m_Value, 1, sizeof( m_Value ), fp ) == sizeof( m_Value );
   }
   /*!
 end
@@ -61,6 +127,50 @@ local function generateStruct( struct )
   ///*= ( '=' ):rep( 80 ) */
   // Struct /*= struct:getName() */
   ///*= ( '=' ):rep( 80 ) */
+  
+  #ifndef NDEBUG
+  /*= struct:getName() */::~/*= struct:getName() */()
+  {
+    /*!
+    for _, field in struct:ownFields() do
+      local name = capitalize( field:getName() )
+      
+      if field:getArrayType() == 'scalar' then
+        if field:getDeclaredType() then
+          -- Destructor automatically called to validate destruction
+        elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+          */
+          assert( m_/*= name */.length() == 0 );
+          /*!
+        end
+      elseif field:getArrayType() == 'fixed' then
+        if field:getDeclaredType() then
+          -- Destructor automatically called to validate destruction
+        elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+          */
+          {
+            for ( size_t i = 0; i < /*= field:getArrayCount() */; i++ )
+            {
+              assert( m_/*= name */[ i ].length() == 0 );
+            }
+          }
+          /*!
+        end
+      elseif field:getArrayType() == 'dynamic' then
+        */
+        assert( m_/*= name */.size() == 0 );
+        /*!
+      elseif field:getArrayType() == 'hashmap' then
+        */
+        assert( m_/*= name */.size() == 0 );
+        /*!
+      else
+        */// Array type "/*= field:getArrayType() */" not supported/*!
+      end
+    end
+    */
+  }
+  #endif
 
   bool /*= struct:getName() */::Init()
   {
@@ -70,57 +180,129 @@ local function generateStruct( struct )
     if struct:getBase() then */ok = ok && /*= struct:getBase() */::Init();/*! end
 
     for _, field in struct:ownFields() do
+      local name = capitalize( field:getName() )
+      
       if field:getArrayType() == 'scalar' then
         if field:getDeclaredType() then
           */
-          ok = ok && m_/*= field:getName() */.Init();
+          ok = ok && m_/*= name */.Init();
           /*!
           if field:getValue() then
             if field:getType() == 'struct' then
               dumpStructValue( { valueinfo = field } )
-            elseif field:getType() == 'select' then
-              */
-              m_/*= field:getName() */.Set( /*= field:getDeclaredType():getName() */::/*= field:getValue():getName() */ ); // /*= field:getValue():getName() */
-              /*!
             else
-              if type( field:getValue() ) ~= 'table' then
+              */
+              m_/*= name */.Set( /*= getFieldValue( field ) */ );
+              /*!
+            end
+          end
+        else
+          */
+          m_/*= name */ = /*= getFieldValue( field ) */;
+          /*!
+        end
+      elseif field:getArrayType() == 'fixed' then
+        if field:getDeclaredType() then
+          for index = 0, field:getArrayCount() - 1 do
+            */
+            ok = ok && m_/*= name */[ /*= index */ ].Init();
+            /*!
+          end
+          
+          if field:getValue() then
+            if field:getType() == 'struct' then
+              dumpStructValue( { valueinfo = field } )
+            else
+              for index = 0, #field:getValue() - 1 do
                 */
-                m_/*= field:getName() */.Set( /*= field:getDeclaredType():getName() */::/*= field:getValue():getName() */ ); // /*= field:getValue():getName() */
+                ok = ok && m_/*= name */[ /*= index */ ].Set( /*= index */, /*= getFieldValue( field, index + 1 ) */ );
                 /*!
-              else
-                */m_/*= field:getName() */.Set( /*!
-                for index, flag in ipairs( field:getValue() ) do
-                  if index ~=1 then emit( '|' ) end
-
-                  emit( field:getDeclaredType():getName(), '::', flag:getName() )
-                end
-                */ );/*!
               end
             end
           end
         else
-          if field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
-            if #getFieldValue( field ) > 2 then
-              */
-              strncpy( m_/*= field:getName() */, /*= getFieldValue( field ) */, sizeof( m_/*= field:getName() */ ) );
-              m_/*= field:getName() */[ sizeof( m_/*= field:getName() */ ) - 1 ] = 0;
-              /*!
-            else
-              */
-              m_/*= field:getName() */[ 0 ] = 0;
-              /*!
-            end
-          else
+          for index, _ in ipairs( field:getValue() or {} ) do
             */
-            m_/*= field:getName() */ = /*= getFieldValue( field ) */;
+              m_/*= name */[ /*= index - 1 */ ] = /*= getFieldValue( field, index ) */;
             /*!
           end
         end
+      elseif field:getArrayType() == 'dynamic' then
+        -- Dynamic arrays don't have default values
+      elseif field:getArrayType() == 'hashmap' then
+        -- Hashmaps don't have default values
+      else
+        */// Array type "/*= field:getArrayType() */" not supported/*!
       end
     end
     */
 
     return ok;
+  }
+
+  void /*= struct:getName() */::Destroy()
+  {
+    /*!
+    if struct:getBase() then */ /*= struct:getBase() */::Destroy();/*! end
+
+    for _, field in struct:ownFields() do
+      local name = capitalize( field:getName() )
+      
+      if field:getArrayType() == 'scalar' then
+        if field:getDeclaredType() then
+          */
+          m_/*= name */.Destroy();
+          /*!
+        elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+          */
+          m_/*= name */.clear();
+          /*!
+        end
+      elseif field:getArrayType() == 'fixed' then
+        if field:getDeclaredType() then
+          */
+          for ( size_t i = 0; i < /*= field:getArrayCount() */; i++ )
+          {
+            m_/*= name */[ i ].Destroy();
+          }
+          /*!
+        elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+          */
+          for ( size_t i = 0; i < /*= field:getArrayCount() */; i++ )
+          {
+            m_/*= name */[ i ].clear();
+          }
+          /*!
+        end
+      elseif field:getArrayType() == 'dynamic' then
+        if field:getDeclaredType() then
+          */
+          for ( size_t i = 0; i < m_/*= name */.size(); i++ )
+          {
+            m_/*= name */[ i ].Destroy();
+          }
+          /*!
+        end
+        */
+        m_/*= name */.clear();
+        /*!
+      elseif field:getArrayType() == 'hashmap' then
+        if field:getDeclaredType() then
+          */
+          for ( std::map< /*= getCppType( field:getKeyType() ) .. ', ' .. getCppType( field:getType() ) */ >::iterator it = m_/*= name */.begin(); it != m_/*= name */.end(); it++ )
+          {
+            it->second.Destroy();
+          }
+          /*!
+        end
+        */
+        m_/*= name */.clear();
+        /*!
+      else
+        */// Array type "/*= field:getArrayType() */" not supported/*!
+      end
+    end
+    */
   }
 
   bool /*= struct:getName() */::Load( FILE* fp )
@@ -130,30 +312,165 @@ local function generateStruct( struct )
     if struct:getBase() then */ok = ok && /*= struct:getBase() */::Load( fp );/*! end
 
     for _, field in struct:ownFields() do
-      if field:getDeclaredType() then
-        */
-        ok = ok && m_/*= field:getName() */.Load( fp );
-        /*!
-      elseif field:getType() == 'boolean' then
+      local name = capitalize( field:getName() )
+      
+      if field:getArrayType() == 'scalar' then
+        if field:getDeclaredType() then
+          */
+          ok = ok && m_/*= name */.Load( fp );
+          /*!
+        elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+          */
+          ok = ok && LoadString( fp, m_/*= name */ );
+          /*!
+        elseif field:getType() == 'boolean' then
+          */
+          ok = ok && LoadBoolean( fp, m_/*= name */ );
+          /*!
+        else
+          */
+          ok = ok && fread( &m_/*= name */, 1, /*= getCppTypeSize( field ) */, fp ) == /*= getCppTypeSize( field ) */;
+          /*!
+        end
+      elseif field:getArrayType() == 'fixed' then
         */
         {
-          uint8_t value;
-          ok = ok && fread( &value, 1, 1, fp ) == 1;
-          m_/*= field:getName() */ = value != 0;
+          size_t i, count;
+          ok = ok && fread( &count, 1, sizeof( size_t ), fp ) == sizeof( size_t );
+          size_t limit = count < /*= field:getArrayCount() */ ? count : /*= field:getArrayCount() */;
+          for ( i = 0; i < limit && ok; i++ )
+          {
+            /*!
+            if field:getDeclaredType() then
+              */
+              ok = ok && m_/*= name */[ i ].Load( fp );
+              /*!
+            elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+              */
+              ok = ok && LoadString( fp, m_/*= name */[ i ] );
+              /*!
+            elseif field:getType() == 'boolean' then
+              */
+              ok = ok && LoadBoolean( fp, m_/*= name */[ i ] );
+              /*!
+            else
+              */
+              ok = ok && fread( &m_/*= name */[ i ], 1, /*= getCppTypeSize( field ) */, fp ) == /*= getCppTypeSize( field ) */;
+              /*!
+            end
+            */
+          }
+          for ( ; i < count && ok; i++ )
+          {
+            /*!
+            if field:getDeclaredType() then
+              */
+              ok = ok && /*= field:getDeclaredType() */.Skip( fp );
+              /*!
+            elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+              */
+              ok = ok && SkipString( fp );
+              /*!
+            elseif field:getType() == 'boolean' then
+              */
+              ok = ok && SkipBoolean( fp );
+              /*!
+            else
+              */
+              ok = ok && fseek( fp, SEEK_CUR, /*= getCppTypeSize( field ) */ ) == 0;
+              /*!
+            end
+            */
+          }
         }
         /*!
-      elseif field:getType() == 'string' then
+      elseif field:getArrayType() == 'dynamic' then
         */
         {
-          uint8_t length;
-          ok = ok && fread( &length, 1, 1, fp ) == 1;
-          ok = ok && fread( m_/*= field:getName() */, 1, length, fp ) == length;
+          m_/*= name */.clear();
+          size_t count;
+          ok = ok && fread( &count, 1, sizeof( size_t ), fp ) == sizeof( size_t );
+          for ( size_t i = 0; i < count && ok; i++ )
+          {
+            /*!
+            if field:getDeclaredType() then
+              */
+              /*= field:getDeclaredType() */ value;
+              ok = ok  && value.Load( fp );
+              m_/*= name */.push_back( value );
+              /*!
+            elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+              */
+              /*= getCppType( field ) */ value;
+              ok = ok && LoadString( fp, value );
+              m_/*= name */.push_back( value );
+              /*!
+            elseif field:getType() == 'boolean' then
+              */
+              /*= getCppType( field ) */ value;
+              ok = ok && LoadBoolean( fp, value );
+              m_/*= name */.push_back( value );
+              /*!
+            else
+              */
+              /*= getCppType( field ) */ value;
+              ok = ok && fread( &m_/*= name */[ i ], 1, /*= getCppTypeSize( field ) */, fp ) == /*= getCppTypeSize( field ) */;
+              m_/*= name */.push_back( value );
+              /*!
+            end
+            */
+          }
+        }
+        /*!
+      elseif field:getArrayType() == 'hashmap' then
+        */
+        {
+          m_/*= name */.clear();
+          size_t count;
+          ok = ok && fread( &count, 1, sizeof( size_t ), fp ) == sizeof( size_t );
+          for ( size_t i = 0; i < count && ok; i++ )
+          {
+            /*!
+            if field:getKeyType() == 'string' or field:getKeyType() == 'file' or field:getKeyType() == 'json' then
+              */
+              /*= getCppType( field:getKeyType() ) */ key;
+              ok = ok && LoadString( fp, key );
+              /*!
+            else
+              */
+              /*= getCppType( field:getKeyType() ) */ key;
+              ok = ok && fread( &key, 1, /*= getCppTypeSize( field:getKeyType() ) */, fp ) == /*= getCppTypeSize( field:getKeyType() ) */;
+              /*!
+            end
+            
+            if field:getDeclaredType() then
+              */
+              /*= field:getDeclaredType() */ value;
+              ok = ok  && value.Load( fp );
+              /*!
+            elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+              */
+              /*= getCppType( field ) */ value;
+              ok = ok && LoadString( fp, value );
+              /*!
+            elseif field:getType() == 'boolean' then
+              */
+              /*= getCppType( field ) */ value;
+              ok = ok && LoadBoolean( fp, value );
+              /*!
+            else
+              */
+              /*= getCppType( field ) */ value;
+              ok = ok && fread( &value, 1, /*= getCppTypeSize( field ) */, fp ) == /*= getCppTypeSize( field ) */;
+              /*!
+            end
+            */
+            m_/*= name */.insert( std::pair< /*= getCppType( field:getKeyType() ) .. ', ' .. getCppType( field ) */ >( key, value ) );
+          }
         }
         /*!
       else
-        */
-        ok = ok && fread( &m_/*= field:getName() */, 1, /*= getCppTypeSize( field ) */, fp ) == /*= getCppTypeSize( field ) */;
-        /*!
+        */// Array type "/*= field:getArrayType() */" not supported/*!
       end
     end
     */
@@ -168,29 +485,106 @@ local function generateStruct( struct )
     if struct:getBase() then */ok = ok && /*= struct:getBase() */::Save( fp );/*! end
 
     for _, field in struct:ownFields() do
-      if field:getDeclaredType() then
-        */
-        ok = ok && m_/*= field:getName() */.Save( fp );
-        /*!
-      elseif field:getType() == 'boolean' then
+      local name = capitalize( field:getName() )
+      
+      if field:getArrayType() == 'scalar' then
+        if field:getDeclaredType() then
+          */
+          ok = ok && m_/*= name */.Save( fp );
+          /*!
+        elseif field:getType() == 'boolean' then
+          */
+          ok = ok && SaveBoolean( fp, m_/*= name */ );
+          /*!
+        elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+          */
+          ok = ok && SaveString( fp, m_/*= name */ );
+          /*!
+        else
+          */
+          ok = ok && fwrite( &m_/*= name */, 1, /*= getCppTypeSize( field ) */, fp ) == /*= getCppTypeSize( field ) */;
+          /*!
+        end
+      elseif field:getArrayType() == 'fixed' or field:getArrayType() == 'dynamic' then
         */
         {
-          uint8_t value = m_/*= field:getName() */ ? 1 : 0;
-          ok = ok && fwrite( &value, 1, 1, fp ) == 1;
+          /*!
+          if field:getArrayType() == 'fixed' then
+            */
+            size_t count = /*= field:getArrayCount() */;
+            /*!
+          else
+            */
+            size_t count = m_/*= name */.size();
+            /*!
+          end
+          */
+          ok = ok && fwrite( &count, 1, sizeof( size_t ), fp ) == sizeof( size_t );
+          for ( size_t i = 0; i < count; i++ )
+          {
+            /*!
+            if field:getDeclaredType() then
+              */
+              ok = ok && m_/*= name */[ i ].Save( fp );
+              /*!
+            elseif field:getType() == 'boolean' then
+              */
+              ok = ok && SaveBoolean( fp, m_/*= name */[ i ] );
+              /*!
+            elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+              */
+              ok = ok && SaveString( fp, m_/*= name */[ i ] );
+              /*!
+            else
+              */
+              ok = ok && fwrite( &m_/*= name */[ i ], 1, /*= getCppTypeSize( field ) */, fp ) == /*= getCppTypeSize( field ) */;
+              /*!
+            end
+            */
+          }
         }
         /*!
-      elseif field:getType() == 'string' then
+      elseif field:getArrayType() == 'hashmap' then
         */
         {
-          uint8_t length = strlen( m_/*= field:getName() */ );
-          ok = ok && fwrite( &length, 1, 1, fp ) == 1;
-          ok = ok && fwrite( m_/*= field:getName() */, 1, length, fp ) == length;
+          size_t count = m_/*= name */.size();
+          ok = ok && fwrite( &count, 1, sizeof( size_t ), fp ) == sizeof( size_t );
+          for ( std::map< /*= getCppType( field:getKeyType() ) .. ', ' .. getCppType( field ) */ >::const_iterator it = m_/*= name */.begin(); it != m_/*= name */.end(); ++it )
+          {
+            /*!
+            if field:getKeyType() == 'string' or field:getKeyType() == 'file' or field:getKeyType() == 'json' then
+              */
+              ok = ok && SaveString( fp, it->first );
+              /*!
+            else
+              */
+              ok = ok && fwrite( &it->first, 1, /*= getCppTypeSize( field:getKeyType() ) */, fp ) == /*= getCppTypeSize( field:getKeyType() ) */;
+              /*!
+            end
+            
+            if field:getDeclaredType() then
+              */
+              ok = ok && it->second.Save( fp );
+              /*!
+            elseif field:getType() == 'boolean' then
+              */
+              ok = ok && SaveBoolean( fp, it->second );
+              /*!
+            elseif field:getType() == 'string' or field:getType() == 'file' or field:getType() == 'json' then
+              */
+              ok = ok && SaveString( fp, it->second );
+              /*!
+            else
+              */
+              ok = ok && fwrite( &it->second, 1, /*= getCppTypeSize( field ) */, fp ) == /*= getCppTypeSize( field ) */;
+              /*!
+            end
+            */
+          }
         }
         /*!
       else
-        */
-        ok = ok && fwrite( &m_/*= field:getName() */, 1, /*= getCppTypeSize( field ) */, fp ) == /*= getCppTypeSize( field ) */;
-        /*!
+        */// Array type "/*= field:getArrayType() */" not supported/*!
       end
     end
     */
@@ -248,6 +642,57 @@ function main( ddlc, first_aggregate, settings )
   /*! for _, include in ipairs( settings[ '--include' ] or {} ) do */
     #include "/*= include */"
   /*! end */
+  
+  static bool SaveString( FILE* fp, const std::string& str )
+  {
+    size_t length = str.length();
+    bool ok = fwrite( &length, 1, sizeof( size_t ), fp ) == sizeof( size_t );
+    ok = ok && fwrite( str.data(), 1, length, fp ) == length;
+    return ok;
+  }
+  
+  static bool LoadString( FILE* fp, std::string& str )
+  {
+    size_t length;
+    bool ok = fread( &length, 1, sizeof( size_t ), fp ) == sizeof( size_t );
+    str.reserve( length );
+    
+    while ( length-- > 0 && ok )
+    {
+      char k;
+      ok = ok && fread( &k, 1, sizeof( char ), fp ) == sizeof( char );
+      str += k;
+    }
+    
+    return ok;
+  }
+  
+  static bool SkipString( FILE* fp )
+  {
+    size_t length;
+    bool ok = fread( &length, 1, sizeof( size_t ), fp ) == sizeof( size_t );
+    ok = ok && fseek( fp, SEEK_CUR, length ) == 0;
+    return ok;
+  }
+  
+  static bool SaveBoolean( FILE* fp, bool b )
+  {
+    uint8_t value = b ? 1 : 0;
+    return fwrite( &value, 1, sizeof( uint8_t ), fp ) == sizeof( uint8_t );
+  }
+
+  static bool LoadBoolean( FILE* fp, bool& b )
+  {
+    uint8_t value;
+    bool ok = fread( &value, 1, sizeof( uint8_t ), fp ) == sizeof( uint8_t );
+    b = value != 0;
+    return ok;
+  }
+  
+  static bool SkipBoolean( FILE* fp )
+  {
+    return fseek( fp, SEEK_CUR, sizeof( uint8_t ) ) == 0;
+  }
   /*!
   generate( ddlc, first_aggregate, settings )
 

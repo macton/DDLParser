@@ -1,11 +1,21 @@
+function capitalize( str )
+  return str:sub( 1, 1 ):upper() .. str:sub( 2, -1 )
+end
+
 function getCppType( field )
-  local aggregate = field:getDeclaredType()
+  local ftype
+  
+  if type( field ) ~= 'string' then
+    local aggregate = field:getDeclaredType()
 
-  if aggregate then
-    return aggregate:getName()
+    if aggregate then
+      return aggregate:getName()
+    end
+
+    ftype = field:getType()
+  else
+    ftype = field
   end
-
-  local type = field:getType()
 
   return
   ({
@@ -19,32 +29,38 @@ function getCppType( field )
     int64 = 'int64_t',
     float32 = 'float',
     float64 = 'double',
-    string = 'char*',
+    string = 'std::string',
     boolean = 'bool',
-    file = 'file',
+    file = 'std::string',
     tuid = 'uint64_t',
-    json = 'char*'
-  })[ type ]
+    json = 'std::string'
+  })[ ftype ]
 end
 
 function getCppTypeSize( field )
-  local type = field:getType()
+  local ftype 
+  
+  if type( field ) ~= 'string' then
+    ftype = field:getType()
+  else
+    ftype = field
+  end
 
   return
   ({
-    uint8 = 1,
-    uint16 = 2,
-    uint32 = 4,
-    uint64 = 8,
-    int8 = 1,
-    int16 = 2,
-    int32 = 4,
-    int64 = 8,
-    float32 = 4,
-    float64 = 8,
-    boolean = 1,
-    tuid = 8,
-  })[ type ] or 0
+    uint8 = true,
+    uint16 = true,
+    uint32 = true,
+    uint64 = true,
+    int8 = true,
+    int16 = true,
+    int32 = true,
+    int64 = true,
+    float32 = true,
+    float64 = true,
+    boolean = true,
+    tuid = true,
+  })[ ftype ] and ( 'sizeof( ' .. getCppType( field ) .. ' )' )
 end
 
 function getFlagValue( flag )
@@ -60,41 +76,62 @@ function getFlagValue( flag )
     if index ~= 1 then
       ret = ret .. ' | '
     end
-    ret = ret .. flag:getName()
+    ret = ret .. 'k' .. capitalize( flag:getName() )
   end
 
   return ret
 end
 
-function getFieldValue( field )
+function getFieldValue( field, index )
   local value = field:getValue()
-  local type = field:getType()
+  local ftype = field:getType()
+  
+  if field:getArrayType() ~= 'scalar' then
+    value = value[ index ]
+  end
 
   if value then
-    if type == 'string' or type == 'file' or type == 'json' then
+    if ftype == 'string' or ftype == 'file' or ftype == 'json' then
       return '"' .. value:escapeCPP() .. '"'
-    elseif type == 'int32' then
+    elseif ftype == 'int32' then
       return value .. 'L'
-    elseif type == 'int64' then
+    elseif ftype == 'int64' then
       return value .. 'LL'
-    elseif type == 'uint32' then
+    elseif ftype == 'uint32' then
       return value .. 'UL'
-    elseif type == 'uint64' or type == 'tuid' then
+    elseif ftype == 'uint64' or ftype == 'tuid' then
       return value .. 'ULL'
-    elseif type == 'float32' then
+    elseif ftype == 'float32' then
       return value .. 'f'
-    elseif type == 'uint8' or type == 'uint16' then
+    elseif ftype == 'uint8' or ftype == 'uint16' then
       return value .. 'U'
+    elseif ftype == 'select' then
+      return field:getDeclaredType():getName() .. '::k' .. capitalize( field:getValue():getName() );
+    elseif ftype == 'bitfield' then
+      if type( field:getValue() ) ~= 'table' then
+        return field:getDeclaredType():getName() .. '::k' .. capitalize( field:getValue():getName() );
+      else
+        local ret = ''
+        for index, flag in ipairs( field:getValue() ) do
+          if index ~=1 then ret = ret .. '|' end
+          ret = ret .. field:getDeclaredType():getName() .. '::k' .. capitalize( flag:getName() )
+        end
+        return ret
+      end
     end
 
     return value
   end
 
-  if type == 'string' or type == 'file' or type == 'json' then
+  if ftype == 'string' or ftype == 'file' or ftype == 'json' then
     return '""'
+  elseif ftype == 'select' then
+    return field:getDeclaredType():getName() .. '::k' .. capitalize( field:getDeclaredType():getDefaultItem():getName() )
+  elseif ftype == 'bitfield' then
+    return field:getDeclaredType():getName() .. '::k' .. capitalize( field:getDeclaredType():getDefaultflag():getName() )
+  else
+    return '0'
   end
-
-  return 0
 end
 
 local function dumpName( node )
@@ -103,7 +140,7 @@ local function dumpName( node )
     emit( '.' )
   end
   
-  emit( 'm_', node.valueinfo:getName() )
+  emit( 'm_', capitalize( node.valueinfo:getName() ) )
 end
 
 function dumpStructValue( node )
@@ -120,7 +157,22 @@ function dumpStructValue( node )
       end
     else
       dumpName( node.previous )
-      emit( '.Set', node.valueinfo:getName(), '( ', getFieldValue( node.valueinfo ), ' );\n' )
+      if node.index then emit( '[ ', node.index, ' ]' ) end
+      emit( '.Set', capitalize( node.valueinfo:getName() ), '( ', getFieldValue( node.valueinfo ), ' );\n' )
+    end
+  elseif node.valueinfo:getArrayType() == 'fixed' then
+    if node.valueinfo:getType() == 'struct' then
+      for index, v in ipairs( value ) do
+        for _, vi in ipairs( v ) do
+          dumpStructValue( { valueinfo = vi, previous = node, index = index - 1 } )
+        end
+      end
+    else
+      for index, value in ipairs( value ) do
+        dumpName( node.previous )
+        if node.index then emit( '[ ', node.index, ' ]' ) end
+        emit( '.Set', capitalize( node.valueinfo:getName() ), '( ', getFieldValue( node.valueinfo ), ' );\n' )
+      end
     end
   end
 end
