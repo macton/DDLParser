@@ -25,6 +25,8 @@ int main()
   
   printf("\n");
   printf("Complete.\n");
+  
+  m1.Destroy();
 
   return (0);
 }

@@ -106,10 +106,10 @@ function getFieldValue( field, index )
     elseif ftype == 'uint8' or ftype == 'uint16' then
       return value .. 'U'
     elseif ftype == 'select' then
-      return field:getDeclaredType():getName() .. '::k' .. capitalize( field:getValue():getName() );
+      return field:getDeclaredType():getName() .. '::k' .. capitalize( field:getValue():getName() )
     elseif ftype == 'bitfield' then
       if type( field:getValue() ) ~= 'table' then
-        return field:getDeclaredType():getName() .. '::k' .. capitalize( field:getValue():getName() );
+        return field:getDeclaredType():getName() .. '::k' .. capitalize( field:getValue():getName() )
       else
         local ret = ''
         for index, flag in ipairs( field:getValue() ) do

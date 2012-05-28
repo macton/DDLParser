@@ -1,4 +1,12 @@
 /*!
+--  ######  ######## ##       ########  ######  ########
+-- ##    ## ##       ##       ##       ##    ##    ##
+-- ##       ##       ##       ##       ##          ##
+--  ######  ######   ##       ######   ##          ##
+--       ## ##       ##       ##       ##          ##
+-- ##    ## ##       ##       ##       ##    ##    ##
+--  ######  ######## ######## ########  ######     ##
+
 local function generateSelect( select )
   */
   ///*= ( '=' ):rep( 80 ) */
@@ -49,6 +57,14 @@ local function generateSelect( select )
   }
   /*!
 end
+
+-- ########  #### ######## ######## #### ######## ##       ########
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ########   ##     ##    ######    ##  ######   ##       ##     ##
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ########  ####    ##    ##       #### ######## ######## ########
 
 local function generateBitfield( bitfield )
   */
@@ -121,6 +137,14 @@ local function generateBitfield( bitfield )
   }
   /*!
 end
+
+--  ######  ######## ########  ##     ##  ######  ########
+-- ##    ##    ##    ##     ## ##     ## ##    ##    ##
+-- ##          ##    ##     ## ##     ## ##          ##
+--  ######     ##    ########  ##     ## ##          ##
+--       ##    ##    ##   ##   ##     ## ##          ##
+-- ##    ##    ##    ##    ##  ##     ## ##    ##    ##
+--  ######     ##    ##     ##  #######   ######     ##
 
 local function generateStruct( struct )
 */
@@ -594,6 +618,14 @@ local function generateStruct( struct )
 /*!
 end
 
+--  ######   ######## ##    ## ######## ########     ###    ######## ########
+-- ##    ##  ##       ###   ## ##       ##     ##   ## ##      ##    ##
+-- ##        ##       ####  ## ##       ##     ##  ##   ##     ##    ##
+-- ##   #### ######   ## ## ## ######   ########  ##     ##    ##    ######
+-- ##    ##  ##       ##  #### ##       ##   ##   #########    ##    ##
+-- ##    ##  ##       ##   ### ##       ##    ##  ##     ##    ##    ##
+--  ######   ######## ##    ## ######## ##     ## ##     ##    ##    ########
+
 local function generate( ddlc, first_aggregate, settings )
   local ddl = ddlc:getDefinition()
 
@@ -609,6 +641,14 @@ local function generate( ddlc, first_aggregate, settings )
     end
   end
 end
+
+-- ##     ##    ###    #### ##    ##
+-- ###   ###   ## ##    ##  ###   ##
+-- #### ####  ##   ##   ##  ####  ##
+-- ## ### ## ##     ##  ##  ## ## ##
+-- ##     ## #########  ##  ##  ####
+-- ##     ## ##     ##  ##  ##   ###
+-- ##     ## ##     ## #### ##    ##
 
 function main( ddlc, first_aggregate, settings )
   if settings[ '--help' ] then
@@ -694,8 +734,8 @@ function main( ddlc, first_aggregate, settings )
     return fseek( fp, SEEK_CUR, sizeof( uint8_t ) ) == 0;
   }
   /*!
+  
   generate( ddlc, first_aggregate, settings )
-
   local code, err = getOutput():formatCode()
   endOutput()
 
