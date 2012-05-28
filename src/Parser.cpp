@@ -2180,56 +2180,51 @@ namespace DDLParser
     }
 
     // Check if default values are in the specified range.
-    if ( field->m_ValueInfo.m_ArrayType != DDLParser::kDynamic && parsed.Exists ( tUIRange ) )
+    DDLParser::StructFieldValue* value = &*field->m_ValueInfo.m_Value;
+    
+    if ( value != NULL && field->m_ValueInfo.m_ArrayType != DDLParser::kDynamic && parsed.Exists( tUIRange ) )
     {
-      DDLParser::UIRange* range = ( DDLParser::UIRange* ) &*field->m_ValueInfo.m_Tags;
+      DDLParser::UIRange* range = (DDLParser::UIRange*)field->GetValueInfo()->GetTag( DDLParser::kUIRange );
 
       for ( uint32_t i = 0; i < field->m_ValueInfo.GetCount(); i++ )
       {
-        DDLParser::StructFieldValue* value = &*field->m_ValueInfo.m_Value;
-
-        if ( value != NULL )
+        bool ok = false;
+        switch ( field->m_ValueInfo.m_Type )
         {
-          bool ok;
-
-          switch ( field->m_ValueInfo.m_Type )
-          {
-            case DDLParser::kUint8:
-              ok = value->m_Uint8[0] >= range->GetHardMin()->m_Uint8 && value->m_Uint8[0] <= range->GetHardMax()->m_Uint8;
-              break;
-            case DDLParser::kUint16:
-              ok = value->m_Uint16[0] >= range->GetHardMin()->m_Uint16 && value->m_Uint16[0] <= range->GetHardMax()->m_Uint16;
-              break;
-            case DDLParser::kUint32:
-              ok = value->m_Uint32[0] >= range->GetHardMin()->m_Uint32 && value->m_Uint32[0] <= range->GetHardMax()->m_Uint32;
-              break;
-            case DDLParser::kUint64:
-              ok = value->m_Uint64[0] >= range->GetHardMin()->m_Uint64 && value->m_Uint64[0] <= range->GetHardMax()->m_Uint64;
-              break;
-            case DDLParser::kInt8:
-              ok = value->m_Int8[0] >= range->GetHardMin()->m_Int8 && value->m_Int8[0] <= range->GetHardMax()->m_Int8;
-              break;
-            case DDLParser::kInt16:
-              ok = value->m_Int16[0] >= range->GetHardMin()->m_Int16 && value->m_Int16[0] <= range->GetHardMax()->m_Int16;
-              break;
-            case DDLParser::kInt32:
-              ok = value->m_Int32[0] >= range->GetHardMin()->m_Int32 && value->m_Int32[0] <= range->GetHardMax()->m_Int32;
-              break;
-            case DDLParser::kInt64:
-              ok = value->m_Int64[0] >= range->GetHardMin()->m_Int64 && value->m_Int64[0] <= range->GetHardMax()->m_Int64;
-              break;
-            case DDLParser::kFloat32:
-              ok = value->m_Float32[0] >= range->GetHardMin()->m_Float32 && value->m_Float32[0] <= range->GetHardMax()->m_Float32;
-              break;
-            case DDLParser::kFloat64:
-              ok = value->m_Float64[0] >= range->GetHardMin()->m_Float64 && value->m_Float64[0] <= range->GetHardMax()->m_Float64;
-              break;
-          }
-
-          if ( !ok )
-          {
-            return ErrorDefaultValueOutOfRange ( m_Error, sizeof ( m_Error ), *m_Current );
-          }
+        case DDLParser::kUint8:
+          ok = value->m_Uint8[ i ] >= range->GetHardMin()->m_Uint8 && value->m_Uint8[ i ] <= range->GetHardMax()->m_Uint8;
+          break;
+        case DDLParser::kUint16:
+          ok = value->m_Uint16[ i ] >= range->GetHardMin()->m_Uint16 && value->m_Uint16[ i ] <= range->GetHardMax()->m_Uint16;
+          break;
+        case DDLParser::kUint32:
+          ok = value->m_Uint32[ i ] >= range->GetHardMin()->m_Uint32 && value->m_Uint32[ i ] <= range->GetHardMax()->m_Uint32;
+          break;
+        case DDLParser::kUint64:
+          ok = value->m_Uint64[ i ] >= range->GetHardMin()->m_Uint64 && value->m_Uint64[ i ] <= range->GetHardMax()->m_Uint64;
+          break;
+        case DDLParser::kInt8:
+          ok = value->m_Int8[ i ] >= range->GetHardMin()->m_Int8 && value->m_Int8[ i ] <= range->GetHardMax()->m_Int8;
+          break;
+        case DDLParser::kInt16:
+          ok = value->m_Int16[ i ] >= range->GetHardMin()->m_Int16 && value->m_Int16[ i ] <= range->GetHardMax()->m_Int16;
+          break;
+        case DDLParser::kInt32:
+          ok = value->m_Int32[ i ] >= range->GetHardMin()->m_Int32 && value->m_Int32[ i ] <= range->GetHardMax()->m_Int32;
+          break;
+        case DDLParser::kInt64:
+          ok = value->m_Int64[ i ] >= range->GetHardMin()->m_Int64 && value->m_Int64[ i ] <= range->GetHardMax()->m_Int64;
+          break;
+        case DDLParser::kFloat32:
+          ok = value->m_Float32[ i ] >= range->GetHardMin()->m_Float32 && value->m_Float32[ i ] <= range->GetHardMax()->m_Float32;
+          break;
+        case DDLParser::kFloat64:
+          ok = value->m_Float64[ i ] >= range->GetHardMin()->m_Float64 && value->m_Float64[ i ] <= range->GetHardMax()->m_Float64;
+          break;
+        }
+        if (!ok)
+        {
+          return ErrorDefaultValueOutOfRange( m_Error, sizeof(m_Error), *m_Current );
         }
       }
     }
