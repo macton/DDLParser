@@ -1,0 +1,411 @@
+/*!
+function getFieldValue( field, index )
+  local value = field:getValue()
+  local ftype = field:getType()
+  
+  if field:getArrayType() ~= 'scalar' then
+    value = value[ index ]
+  end
+
+  if value then
+    if ftype == 'string' or ftype == 'file' or ftype == 'json' then
+      return '"' .. value:escapeCPP() .. '"'
+    elseif ftype == 'int32' then
+      return value
+    elseif ftype == 'int64' then
+      return value
+    elseif ftype == 'uint32' then
+      return value
+    elseif ftype == 'uint64' or ftype == 'tuid' then
+      return value
+    elseif ftype == 'float32' then
+      return value
+    elseif ftype == 'uint8' or ftype == 'uint16' then
+      return value
+    elseif ftype == 'select' then
+      return '"' .. field:getValue():getName() .. '"'
+    elseif ftype == 'bitfield' then
+      if type( field:getValue() ) ~= 'table' then
+        return '"' .. field:getValue():getName() .. '"'
+      else
+        local ret = '"'
+        for index, flag in ipairs( field:getValue() ) do
+          if index ~=1 then ret = ret .. '|' end
+          ret = ret .. flag:getName()
+        end
+        return ret .. '"'
+      end
+    end
+
+    return value
+  end
+
+  if ftype == 'string' or ftype == 'file' or ftype == 'json' then
+    return '""'
+  elseif ftype == 'select' then
+    return field:getDeclaredType():getName() .. '::' .. field:getDeclaredType():getDefaultItem():getName()
+  elseif ftype == 'bitfield' then
+    return field:getDeclaredType():getName() .. '::' .. field:getDeclaredType():getDefaultflag():getName()
+  else
+    return '0'
+  end
+end
+
+--  ######  ######## ##       ########  ######  ########
+-- ##    ## ##       ##       ##       ##    ##    ##
+-- ##       ##       ##       ##       ##          ##
+--  ######  ######   ##       ######   ##          ##
+--       ## ##       ##       ##       ##          ##
+-- ##    ## ##       ##       ##       ##    ##    ##
+--  ######  ######## ######## ########  ######     ##
+
+local function generateSelect( select )
+*/
+  "/*= select:getName() */":
+  {
+    "Type": "select",
+    "NameHash": "/*= ( '%08x' ):format( select:getNameHash() ) */",
+    "Author": "/*= select:getAuthor() or '' */",
+    "Description": "/*= select:getDescription() or '' */",
+    "Label": "/*= select:getLabel() or '' */",
+    "DisplayLabel": "/*=select:getDisplayLabel() or '' */",
+    "Count": "/*= #select */",
+    "Items":
+    {
+      /*!
+      for i, item in select:items() do
+      */
+        "/*= item:getName() */":
+        {
+          "NameHash": "/*= ( '%08x' ):format( item:getNameHash() ) */",
+          "Index": "/*= i */",
+          "Author": "/*= item:getAuthor() or '' */",
+          "Description": "/*= item:getDescription() or '' */",
+          "Label": "/*= item:getLabel() or '' */",
+          "DisplayLabel": "/*= item:getDisplayLabel() or '' */"
+        } /*! if i ~= #select then */,/*! end */
+      /*!
+      end
+      */
+    }
+  }
+/*!
+end
+
+-- ########  #### ######## ######## #### ######## ##       ########
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ########   ##     ##    ######    ##  ######   ##       ##     ##
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ##     ##  ##     ##    ##        ##  ##       ##       ##     ##
+-- ########  ####    ##    ##       #### ######## ######## ########
+
+local function generateBitfield( bitfield )
+*/
+  "/*= bitfield:getName() */":
+  {
+    "Type": "bitfield",
+    "NameHash": "/*= ( '%08x' ):format( bitfield:getNameHash() ) */",
+    "Author": "/*= bitfield:getAuthor() or '' */",
+    "Description": "/*= bitfield:getDescription() or '' */",
+    "Label": "/*= bitfield:getLabel() or '' */",
+    "DisplayLabel": "/*= bitfield:getDisplayLabel() or '' */",
+    "Count": "/*= #bitfield */",
+    "Flags":
+    {
+      /*!
+      for i, flag in bitfield:flags() do
+        local value = flag:getValue()
+        
+        */
+        "/*= flag:getName() */":
+        {
+          "NameHash": "/*= ( '%08x' ):format( flag:getNameHash() ) */",
+          /*!
+          if type( value ) ~= 'table' then
+            */
+            "Value": "/*= ( '%08x' ):format( value ) */",
+            /*!
+          else
+            */
+            "Value":
+            [
+            /*!
+            for i, flag in ipairs( value ) do
+              */
+              "/*= flag:getName() */"
+              /*! if i ~= #value then */,/*! end
+            end
+            */
+            ],
+            /*!
+          end
+          */
+          "Author": "/*= flag:getAuthor() or '' */",
+          "Description": "/*= flag:getDescription() or '' */",
+          "Label": "/*= flag:getLabel() or '' */",
+          "DisplayLabel": "/*= flag:getDisplayLabel() or '' */"
+        } /*! if i ~= #bitfield then */,/*! end
+      end
+      */
+    }
+  }
+/*!
+end
+
+-- ######## #### ######## ##       ########          ########    ###     ######    ######
+-- ##        ##  ##       ##       ##     ##            ##      ## ##   ##    ##  ##    ##
+-- ##        ##  ##       ##       ##     ##            ##     ##   ##  ##        ##
+-- ######    ##  ######   ##       ##     ##            ##    ##     ## ##   ####  ######
+-- ##        ##  ##       ##       ##     ##            ##    ######### ##    ##        ##
+-- ##        ##  ##       ##       ##     ##            ##    ##     ## ##    ##  ##    ##
+-- ##       #### ######## ######## ########             ##    ##     ##  ######    ######
+
+local function generateFieldTags( field )
+  local exts = field:getExtensions()
+  local soft_min = field:getSoftMin()
+  local render = field:getRender()
+  local units = field:getUnits()
+  
+  if exts then
+  */
+    "Extensions":
+    [
+      /*! for i, ext in ipairs( exts ) do */
+        "/*= ext */" /*! if i ~= #exts then */,/*! end */
+      /*! end */
+    ] /*! if soft_min then */,/*! end */
+  /*!
+  end
+  
+  if soft_min then
+  */
+    "UIRange":
+    {
+      "SoftMin": "/*= field:GetSoftMin() */",
+      "SoftMax": "/*= field:GetSoftMax() */",
+      "HardMin": "/*= field:GetHardMin() */",
+      "HardMax": "/*= field:GetHardMax() */",
+      "Step": "/*= field:GetStep() */"
+    } /*! if render then */,/*! end */
+  /*!
+  end
+  
+  if render then
+  */
+    "UIRender": "/*= render */" /*! if units then */,/*! end */
+  /*!
+  end
+  
+  if units then
+  */
+    "Units": "/*= units */"
+  /*!
+  end
+end
+
+-- ######## #### ######## ##       ########          ##     ##    ###    ##       ##     ## ########
+-- ##        ##  ##       ##       ##     ##         ##     ##   ## ##   ##       ##     ## ##
+-- ##        ##  ##       ##       ##     ##         ##     ##  ##   ##  ##       ##     ## ##
+-- ######    ##  ######   ##       ##     ##         ##     ## ##     ## ##       ##     ## ######
+-- ##        ##  ##       ##       ##     ##          ##   ##  ######### ##       ##     ## ##
+-- ##        ##  ##       ##       ##     ##           ## ##   ##     ## ##       ##     ## ##
+-- ##       #### ######## ######## ########             ###    ##     ## ########  #######  ########
+
+local generateStruct
+
+local function generateFieldValue( field )
+  if field:getArrayType() == 'scalar' then
+    if field:getType() == 'struct' then
+      local values = field:getValue()
+      */
+      {
+        /*!
+        for i, value in pairs( values ) do
+          */
+          "/*= value:getName() */": /*! generateFieldValue( value ) */
+          /*!
+          
+          if i ~= #values then
+            emit( ',' )
+          end
+        end
+        */
+      }
+      /*!
+    else
+      */
+        /*= getFieldValue( field ) */
+      /*!
+    end
+  elseif field:getArrayType() == 'fixed' then
+    */
+    [
+      /*!
+      for i = 1, field:getArrayCount() do
+      */
+        /*!
+        if field:getType() == 'struct' then
+          generateStruct( field:getDeclaredType() )
+        else
+          */
+            /*= getFieldValue( field ) */
+          /*!
+        end
+        */
+        /*! if i ~= field:getArrayCount() then */,/*! end
+      end */
+    ]
+    /*!
+  else
+  */
+    [
+    ]
+  /*!
+  end
+end
+
+--  ######  ######## ########  ##     ##  ######  ########
+-- ##    ##    ##    ##     ## ##     ## ##    ##    ##
+-- ##          ##    ##     ## ##     ## ##          ##
+--  ######     ##    ########  ##     ## ##          ##
+--       ##    ##    ##   ##   ##     ## ##          ##
+-- ##    ##    ##    ##    ##  ##     ## ##    ##    ##
+--  ######     ##    ##     ##  #######   ######     ##
+
+generateStruct = function( struct )
+*/
+  "/*= struct:getName() */":
+  {
+    "Type": "struct",
+    "NameHash": "/*= ( '%08x' ):format( struct:getNameHash() ) */",
+    "Base": "/*= struct:getBase() or '' */",
+    "Author": "/*= struct:getAuthor() or '' */",
+    "Description": "/*= struct:getDescription() or '' */",
+    "Label": "/*= struct:getLabel() or '' */",
+    "DisplayLabel": "/*= struct:getDisplayLabel() or '' */",
+    "Fields":
+    {
+      /*!
+      for i, field in struct:fields() do
+      */
+        "/*= field:getName() */":
+        {
+          "Type": "/*= field:getDeclaredType() and field:getDeclaredType():getName() or field:getType() */",
+          "NameHash": "/*= ( '%08x' ):format( field:getNameHash() ) */",
+          "ArrayType": "/*= field:getArrayType() */",
+          "ArraySize": "/*= field:getArrayCount() or 0 */",
+          "Value": /*! generateFieldValue( field ) */,
+          "Author": "/*= field:getAuthor() or '' */",
+          "Description": "/*= field:getDescription() or '' */",
+          "Label": "/*= field:getLabel() or '' */",
+          "DisplayLabel": "/*= field:getDisplayLabel() or '' */",
+          "Tags":
+          {
+            /*!
+            --generateTags( field )
+            */
+          }
+        } /*! if i ~= #struct then */,/*! end
+      end
+      */
+    }
+  }
+/*!
+end
+
+--  ######   ######## ##    ## ######## ########     ###    ######## ########
+-- ##    ##  ##       ###   ## ##       ##     ##   ## ##      ##    ##
+-- ##        ##       ####  ## ##       ##     ##  ##   ##     ##    ##
+-- ##   #### ######   ## ## ## ######   ########  ##     ##    ##    ######
+-- ##    ##  ##       ##  #### ##       ##   ##   #########    ##    ##
+-- ##    ##  ##       ##   ### ##       ##    ##  ##     ##    ##    ##
+--  ######   ######## ##    ## ######## ##     ## ##     ##    ##    ########
+
+local function generate( ddlc, first_aggregate, settings )
+  local ddl = ddlc:getDefinition()
+
+  */
+  {
+  /*!
+  for i, aggregate in ddl:aggregates() do
+    if aggregate:getType() == 'select' then
+      generateSelect( aggregate )
+    elseif aggregate:getType() == 'bitfield' then
+      generateBitfield( aggregate )
+    elseif aggregate:getType() == 'struct' then
+      generateStruct( aggregate )
+    else
+      error( 'Unsupported aggregate: ' .. aggregate:getType() )
+    end
+  
+    if i ~= #ddl then
+      emit( ',' )
+    end
+  end
+  */
+  }
+/*!
+end
+
+function main( ddlc, first_aggregate, settings )
+  if settings[ '--help' ] then
+    io.write(
+      'JSON template arguments\n',
+      '\n',
+      '-a --additional_folder <folder> Adds an additional folder to the output path of\n',
+      '                                the generated file\n',
+      '\n'
+    )
+    return
+  end
+
+  --[[CheckSettings( settings, {
+    { short_name = '-a', long_name = '--additional_folder', mandatory = false, min = 1, max = 1 },
+  } )
+  
+  local codegen_folder = GetDistroFolder() .. '\\CodeGen\\'
+
+  if settings[ '--additional_folder' ] then
+    codegen_folder =  codegen_folder .. settings[ '--additional_folder' ][ 1 ] .. '\\'
+  end
+
+  local json_path = codegen_folder .. settings[ '--input_file' ][ 1 ]:GetFilePathLeaf():StripFilePathSuffix() .. '.json'
+
+  codegen_folder:CreateDirectory()]]
+  if settings[ '--help' ] then
+    io.write(
+      'JSON template arguments\n',
+      '-o --output-file <file>        Defines the output file\n',
+      '\n'
+    )
+    return
+  end
+
+  checkSettings( settings, {
+    { short_name = '-o', long_name = '--output-file', min = 1, max = 1 }, -- mandatory
+  } )
+
+  if not settings[ '--output-file' ] then
+    error( 'Missing mandatory option --output-file' )
+  end
+
+  beginOutput()
+  generate( ddlc, first_aggregate, settings )
+  local code, err = getOutput()
+  endOutput()
+  
+  if not code then
+    error( err )
+  end
+
+  local file, err = io.open( settings[ '--output-file' ][ 1 ], 'w' )
+
+  if not file then
+    error( err )
+  end
+
+  file:write( code )
+  file:close()
+end
+*/
