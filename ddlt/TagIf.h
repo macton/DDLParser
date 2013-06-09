@@ -100,5 +100,6 @@ namespace DDLT
     static int PushNew( lua_State* L, DDLParser::Definition* definition, DDLParser::Bitfield* bitfield, DDLParser::BitfieldFlag* flag, DDLParser::Tag* tag );
     static int PushNew( lua_State* L, DDLParser::Definition* definition, DDLParser::Struct* structure, DDLParser::StructField* field, DDLParser::Tag* tag );
     static Tag* Check( lua_State* L, int index );
+    int PushNext( lua_State* L );
   };
 }

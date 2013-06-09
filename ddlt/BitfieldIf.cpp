@@ -2,6 +2,7 @@
 
 #include <DDLParser.h>
 
+#include "TagIf.h"
 #include "BitfieldIf.h"
 #include "DefinitionIf.h"
 #include "Util.h"
@@ -107,6 +108,28 @@ int DDLT::BitfieldFlag::getOwner( lua_State* L )
   return Bitfield::PushNew( L, self->m_Definition, self->m_Bitfield );
 }
 
+int DDLT::BitfieldFlag::tagsIterator( lua_State* L )
+{
+  BitfieldFlag* self = Check( L, 1 );
+  
+  if ( lua_isnil( L, 2 ) )
+  {
+    return Tag::PushNew( L, self->m_Definition, self->m_Bitfield, self->m_Flag, self->m_Flag->GetTags() );
+  }
+  
+  return Tag::Check( L, 2 )->PushNext( L );
+}
+
+int DDLT::BitfieldFlag::tags( lua_State* L )
+{
+  Check( L, 1 );
+  
+  lua_pushcfunction( L, tagsIterator );
+  lua_pushvalue( L, 1 );
+  lua_pushnil( L );
+  return 3;
+}
+
 int DDLT::BitfieldFlag::l__index( lua_State* L )
 {
   const char* key  = luaL_checkstring( L, 2 );
@@ -137,6 +160,9 @@ int DDLT::BitfieldFlag::l__index( lua_State* L )
     return 1;
   case 0x3dc5bb1dU: // getOwner
     lua_pushcfunction( L, getOwner );
+    return 1;
+  case 0xff1efba8U: // tags
+    lua_pushcfunction( L, tags );
     return 1;
   }
 
@@ -337,6 +363,28 @@ int DDLT::Bitfield::flags( lua_State* L )
   return 3;
 }
 
+int DDLT::Bitfield::tagsIterator( lua_State* L )
+{
+  Bitfield* self = Check( L, 1 );
+  
+  if ( lua_isnil( L, 2 ) )
+  {
+    return Tag::PushNew( L, self->m_Definition, self->m_Bitfield, NULL, self->m_Bitfield->GetTags() );
+  }
+  
+  return Tag::Check( L, 2 )->PushNext( L );
+}
+
+int DDLT::Bitfield::tags( lua_State* L )
+{
+  Check( L, 1 );
+  
+  lua_pushcfunction( L, tagsIterator );
+  lua_pushvalue( L, 1 );
+  lua_pushnil( L );
+  return 3;
+}
+
 int DDLT::Bitfield::l__index( lua_State* L )
 {
   const char* key  = luaL_checkstring( L, 2 );
@@ -382,6 +430,9 @@ int DDLT::Bitfield::l__index( lua_State* L )
     return 1;
   case 0xd397a27fU: // flags
     lua_pushcfunction( L, flags );
+    return 1;
+  case 0xff1efba8U: // tags
+    lua_pushcfunction( L, tags );
     return 1;
   default:
     if ( lua_isnumber( L, 2 ) )

@@ -2,6 +2,7 @@
 
 #include <DDLParser.h>
 
+#include "TagIf.h"
 #include "SelectIf.h"
 #include "DefinitionIf.h"
 #include "Util.h"
@@ -76,6 +77,28 @@ int DDLT::SelectItem::getOwner( lua_State* L )
   return Select::PushNew( L, self->m_Definition, self->m_Select );
 }
 
+int DDLT::SelectItem::tagsIterator( lua_State* L )
+{
+  SelectItem* self = Check( L, 1 );
+  
+  if ( lua_isnil( L, 2 ) )
+  {
+    return Tag::PushNew( L, self->m_Definition, self->m_Select, self->m_Item, self->m_Item->GetTags() );
+  }
+  
+  return Tag::Check( L, 2 )->PushNext( L );
+}
+
+int DDLT::SelectItem::tags( lua_State* L )
+{
+  Check( L, 1 );
+  
+  lua_pushcfunction( L, tagsIterator );
+  lua_pushvalue( L, 1 );
+  lua_pushnil( L );
+  return 3;
+}
+
 int DDLT::SelectItem::l__index( lua_State* L )
 {
   const char* key  = luaL_checkstring( L, 2 );
@@ -103,6 +126,9 @@ int DDLT::SelectItem::l__index( lua_State* L )
     return 1;
   case 0x3dc5bb1dU: // getOwner
     lua_pushcfunction( L, getOwner );
+    return 1;
+  case 0xff1efba8U: // tags
+    lua_pushcfunction( L, tags );
     return 1;
   }
 
@@ -303,6 +329,28 @@ int DDLT::Select::items( lua_State* L )
   return 3;
 }
 
+int DDLT::Select::tagsIterator( lua_State* L )
+{
+  Select* self = Check( L, 1 );
+  
+  if ( lua_isnil( L, 2 ) )
+  {
+    return Tag::PushNew( L, self->m_Definition, self->m_Select, NULL, self->m_Select->GetTags() );
+  }
+  
+  return Tag::Check( L, 2 )->PushNext( L );
+}
+
+int DDLT::Select::tags( lua_State* L )
+{
+  Check( L, 1 );
+  
+  lua_pushcfunction( L, tagsIterator );
+  lua_pushvalue( L, 1 );
+  lua_pushnil( L );
+  return 3;
+}
+
 int DDLT::Select::l__index( lua_State* L )
 {
   const char* key = luaL_checkstring( L, 2 );
@@ -310,7 +358,7 @@ int DDLT::Select::l__index( lua_State* L )
 
   switch ( hash )
   {
-  case 0x44e9085cU:// getType
+  case 0x44e9085cU: // getType
     lua_pushcfunction( L, getType );
     return 1;
   case 0x96142173U: // getName
@@ -348,6 +396,9 @@ int DDLT::Select::l__index( lua_State* L )
     return 1;
   case 0x398c0a88U: // items
     lua_pushcfunction( L, items );
+    return 1;
+  case 0xff1efba8U: // tags
+    lua_pushcfunction( L, tags );
     return 1;
   default:
     if ( lua_isnumber( L, 2 ) )

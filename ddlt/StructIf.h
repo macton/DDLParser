@@ -40,6 +40,8 @@ namespace DDLT
     static int inheritedFields( lua_State* L );
     static int ownFieldsIterator( lua_State* L );
     static int ownFields( lua_State* L );
+    static int tagsIterator( lua_State* L );
+    static int tags( lua_State* L );
     static int l__index( lua_State* L );
     static int l__gc( lua_State* L );
     static int l__eq( lua_State* L );
@@ -90,6 +92,8 @@ namespace DDLT
     static int getKeyType( lua_State* L );
     static int getOwner( lua_State* L );
     static int isInherited( lua_State* L );
+    static int tagsIterator( lua_State* L );
+    static int tags( lua_State* L );
     static int l__index( lua_State* L );
     static int l__gc( lua_State* L );
     static int l__eq( lua_State* L );

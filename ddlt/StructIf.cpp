@@ -7,6 +7,7 @@
 #include "StructIf.h"
 #include "SelectIf.h"
 #include "BitfieldIf.h"
+#include "TagIf.h"
 #include "Util.h"
 
 extern "C"
@@ -501,6 +502,28 @@ int DDLT::StructField::isInherited( lua_State* L )
   return 1;
 }
 
+int DDLT::StructField::tagsIterator( lua_State* L )
+{
+  StructField* self = Check( L, 1 );
+  
+  if ( lua_isnil( L, 2 ) )
+  {
+    return Tag::PushNew( L, self->m_Definition, self->m_Struct, self->m_Field, self->m_Field->m_ValueInfo.GetTags() );
+  }
+  
+  return Tag::Check( L, 2 )->PushNext( L );
+}
+
+int DDLT::StructField::tags( lua_State* L )
+{
+  Check( L, 1 );
+  
+  lua_pushcfunction( L, tagsIterator );
+  lua_pushvalue( L, 1 );
+  lua_pushnil( L );
+  return 3;
+}
+
 int DDLT::StructField::l__index( lua_State* L )
 {
   const char* key  = luaL_checkstring( L, 2 );
@@ -549,6 +572,9 @@ int DDLT::StructField::l__index( lua_State* L )
     return 1;
   case 0xc5819371U: // isInherited
     lua_pushcfunction( L, isInherited );
+    return 1;
+  case 0xff1efba8U: // tags
+    lua_pushcfunction( L, tags );
     return 1;
   }
 
@@ -867,6 +893,28 @@ int DDLT::Struct::ownFields( lua_State* L )
   return 3;
 }
 
+int DDLT::Struct::tagsIterator( lua_State* L )
+{
+  Struct* self = Check( L, 1 );
+  
+  if ( lua_isnil( L, 2 ) )
+  {
+    return Tag::PushNew( L, self->m_Definition, self->m_Struct, NULL, self->m_Struct->GetTags() );
+  }
+  
+  return Tag::Check( L, 2 )->PushNext( L );
+}
+
+int DDLT::Struct::tags( lua_State* L )
+{
+  Check( L, 1 );
+  
+  lua_pushcfunction( L, tagsIterator );
+  lua_pushvalue( L, 1 );
+  lua_pushnil( L );
+  return 3;
+}
+
 int DDLT::Struct::l__index( lua_State* L )
 {
   const char* key  = luaL_checkstring( L, 2 );
@@ -924,6 +972,9 @@ int DDLT::Struct::l__index( lua_State* L )
     return 1;
   case 0xd048af58U: // ownFields
     lua_pushcfunction( L, ownFields );
+    return 1;
+  case 0xff1efba8U: // tags
+    lua_pushcfunction( L, tags );
     return 1;
   default:
     if ( lua_isnumber( L, 2 ) )

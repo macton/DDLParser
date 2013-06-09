@@ -507,7 +507,7 @@ int DDLT::Tag::PushNew( lua_State* L, DDLParser::Definition* definition, DDLPars
   {
     return luaL_error( L, "Error creating DDLT::Tag" );
   }
-
+  
   return SetMetatable( L );
 }
 
@@ -538,4 +538,24 @@ int DDLT::Tag::PushNew( lua_State* L, DDLParser::Definition* definition, DDLPars
 DDLT::Tag* DDLT::Tag::Check( lua_State* L, int index )
 {
   return (Tag*)luaL_checkudata( L, index, "DDLT::Tag" );
+}
+
+int DDLT::Tag::PushNext( lua_State* L )
+{
+  DDLParser::Tag* next = m_Tag->GetNext();
+  
+  if ( next != NULL )
+  {
+    switch ( m_AggregateType )
+    {
+    case DDLParser::kSelect:
+      return PushNew( L, m_Definition, m_Select, m_Item, next );
+    case DDLParser::kBitfield:
+      return PushNew( L, m_Definition, m_Bitfield, m_Flag, next );
+    case DDLParser::kStruct:
+      return PushNew( L, m_Definition, m_Struct, m_Field, next );
+    }
+  }
+  
+  return 0;
 }

@@ -33,6 +33,8 @@ namespace DDLT
     static int getOwner( lua_State* L );
     static int itemsIterator( lua_State* L );
     static int items( lua_State* L );
+    static int tagsIterator( lua_State* L );
+    static int tags( lua_State* L );
     static int l__index( lua_State* L );
     static int l__gc( lua_State* L );
     static int l__eq( lua_State* L );
@@ -77,6 +79,8 @@ namespace DDLT
     static int getDisplayLabel( lua_State* L );
     static int getNameHash( lua_State* L );
     static int getOwner( lua_State* L );
+    static int tagsIterator( lua_State* L );
+    static int tags( lua_State* L );
     static int l__index( lua_State* L );
     static int l__gc( lua_State* L );
     static int l__eq( lua_State* L );
