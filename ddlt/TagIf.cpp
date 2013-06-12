@@ -501,38 +501,53 @@ int DDLT::Tag::SetMetatable( lua_State* L )
 
 int DDLT::Tag::PushNew( lua_State* L, DDLParser::Definition* definition, DDLParser::Select* select, DDLParser::SelectItem* item, DDLParser::Tag* tag )
 {
-  Tag* self = new ( lua_newuserdata( L, sizeof( Tag ) ) ) Tag;
-
-  if ( !self->Init( definition, select, item, tag ) )
+  if ( tag != NULL )
   {
-    return luaL_error( L, "Error creating DDLT::Tag" );
+    Tag* self = new ( lua_newuserdata( L, sizeof( Tag ) ) ) Tag;
+
+    if ( !self->Init( definition, select, item, tag ) )
+    {
+      return luaL_error( L, "Error creating DDLT::Tag" );
+    }
+    
+    return SetMetatable( L );
   }
   
-  return SetMetatable( L );
+  return 0;
 }
 
 int DDLT::Tag::PushNew( lua_State* L, DDLParser::Definition* definition, DDLParser::Bitfield* bitfield, DDLParser::BitfieldFlag* flag, DDLParser::Tag* tag )
 {
-  Tag* self = new ( lua_newuserdata( L, sizeof( Tag ) ) ) Tag;
-
-  if ( !self->Init( definition, bitfield, flag, tag ) )
+  if ( tag != NULL )
   {
-    return luaL_error( L, "Error creating DDLT::Tag" );
-  }
+    Tag* self = new ( lua_newuserdata( L, sizeof( Tag ) ) ) Tag;
 
-  return SetMetatable( L );
+    if ( !self->Init( definition, bitfield, flag, tag ) )
+    {
+      return luaL_error( L, "Error creating DDLT::Tag" );
+    }
+
+    return SetMetatable( L );
+  }
+  
+  return 0;
 }
 
 int DDLT::Tag::PushNew( lua_State* L, DDLParser::Definition* definition, DDLParser::Struct* structure, DDLParser::StructField* field, DDLParser::Tag* tag )
 {
-  Tag* self = new ( lua_newuserdata( L, sizeof( Tag ) ) ) Tag;
-
-  if ( !self->Init( definition, structure, field, tag ) )
+  if ( tag != NULL )
   {
-    return luaL_error( L, "Error creating DDLT::Tag" );
-  }
+    Tag* self = new ( lua_newuserdata( L, sizeof( Tag ) ) ) Tag;
 
-  return SetMetatable( L );
+    if ( !self->Init( definition, structure, field, tag ) )
+    {
+      return luaL_error( L, "Error creating DDLT::Tag" );
+    }
+
+    return SetMetatable( L );
+  }
+  
+  return 0;
 }
 
 DDLT::Tag* DDLT::Tag::Check( lua_State* L, int index )
@@ -544,17 +559,14 @@ int DDLT::Tag::PushNext( lua_State* L )
 {
   DDLParser::Tag* next = m_Tag->GetNext();
   
-  if ( next != NULL )
+  switch ( m_AggregateType )
   {
-    switch ( m_AggregateType )
-    {
-    case DDLParser::kSelect:
-      return PushNew( L, m_Definition, m_Select, m_Item, next );
-    case DDLParser::kBitfield:
-      return PushNew( L, m_Definition, m_Bitfield, m_Flag, next );
-    case DDLParser::kStruct:
-      return PushNew( L, m_Definition, m_Struct, m_Field, next );
-    }
+  case DDLParser::kSelect:
+    return PushNew( L, m_Definition, m_Select, m_Item, next );
+  case DDLParser::kBitfield:
+    return PushNew( L, m_Definition, m_Bitfield, m_Flag, next );
+  case DDLParser::kStruct:
+    return PushNew( L, m_Definition, m_Struct, m_Field, next );
   }
   
   return 0;
