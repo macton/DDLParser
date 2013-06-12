@@ -79,7 +79,7 @@ output/release/Value.o: src/Value.cpp
 	g++ -O2 -Iinclude -Ideps -D__WIN__ -DDDLT_TEMPLATE_DIR="\"/usr/local/share/ddlt/\"" -Wall -Wno-format -o $@ -c src/Value.cpp
 
 src/Tokens.inc: src/Tokens.gperf
-	cd src && gperf -c -C -l -L C++ -t -7 -m 100 -I --output-file=Tokens.inc Tokens.gperf && cd ..
+	cd src && ../util/gperf -c -C -l -L C++ -t -7 -m 100 -I --output-file=Tokens.inc Tokens.gperf && cd ..
 
 ##       ######## ######## ##     ## ########  #######   ######
 ####        ##    ##        ##   ##     ##    ##     ## ##    ##

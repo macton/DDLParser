@@ -76,7 +76,7 @@ if platform == 'mingw' then
   config.CCLIBD   = 'g++ -O0 -g -Iinclude -Ideps -D__WIN__ -DDDLT_TEMPLATE_DIR="\\"/usr/local/share/ddlt/\\"" -Wall -Wno-format -o $@ -c %1'
   config.LIB      = 'ar cru $@ ${ALLDEPS} && ranlib $@'
   config.LINK     = 'g++ -Ldeps -o $@ ${ALLDEPS}'
-  config.GPERF    = 'gperf -c -C -l -L C++ -t -7 -m 100 -I'
+  config.GPERF    = '../util/gperf -c -C -l -L C++ -t -7 -m 100 -I'
   config.RM       = 'rm -f'
   config.LUA      = 'util/lua'
 
